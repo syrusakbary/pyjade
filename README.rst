@@ -14,9 +14,6 @@ First, you must do::
 
 Or::
 
-	wget https://github.com/SyrusAkbary/pyjade/zipball/master
-	unzip SyrusAkbary-pyjade-*
-	cd SyrusAkbary-pyjade-*
 	python setup.py install
 
 Now simply **name your templates with a `.jade` extension** and this jade compiler
