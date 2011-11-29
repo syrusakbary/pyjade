@@ -79,8 +79,54 @@ Adjust your "your_project/__init__.py" and add the following line somewhere to i
 Syntax
 ======
 
-The same as the Jade Node.js module
+The same as the Jade Node.js module (except of no commas on attributes)
 https://github.com/visionmedia/jade/blob/master/Readme.md
+
+Example
+-------
+
+This code::
+
+	!!! 5
+	html(lang="en")
+	  head
+	    title= pageTitle
+	    script(type='text/javascript')
+	      if (foo) {
+	         bar()
+	      }
+	  body
+	    h1.title Jade - node template engine
+	    #container
+	      if youAreUsingJade
+	        p You are amazing
+	      else
+	        p Get on it!
+
+
+Converts to::
+
+	<!DOCTYPE html>
+	<html lang="en">
+	  <head>
+	    <title>{{pageTitle}}</title>
+	    <script type='text/javascript'>
+	      if (foo) {
+	         bar()
+	      }
+	    </script>
+	  </head>
+	  <body>
+	    <h1 class="title">Jade - node template engine</h1>
+	    <div id="container">
+	      {%if youAreUsingJade%}
+	        <p>You are amazing</p>
+	      {%else%}
+	        <p>Get on it!</p>
+	      {%endif%}
+	    </div>
+	  </body>
+	</html>
 
 
 TODOs and BUGS
