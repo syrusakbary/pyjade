@@ -26,10 +26,10 @@ Django
 
 In `settings.py`, modify `TEMPLATE_LOADERS` like::
 
-    TEMPLATE_LOADERS = (
-        'pyjade.django.FSLoader',
-        'pyjade.django.AppLoader',
-    )
+	TEMPLATE_LOADERS = (
+	    'pyjade.ext.django.loaders.FSLoader',
+	    'pyjade.ext.django.loaders.AppLoader',
+	)
 
 These replace your usual Django loaders::
 
