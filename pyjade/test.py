@@ -55,14 +55,31 @@ html(lang="en")
         p Get on it!
 '''
 
-template_jade = '''doctype 5
-html
-  link(href="{{url_for('assetsy','css/all.css')}}" media="screen" rel="stylesheet" type="text/css")
-  set s = True -
-  if s -
-    =s'''
+template_jade = '''!!! 5
+html(lang="en")
+  head
+    title= pageTitle
+    script(type='text/javascript')
+      if (foo) {
+         bar()
+      }
+  body
+    h1.title Jade - node template engine
+    #container
+      if youAreUsingJade
+        p You are amazing
+      else
+        p Get on it!
+'''
+'''  //
+    a.link#myweb(href="http://syrusakbary.com" rel="_blank") Link to my web
+    div hello comment
+  //[Conditional Comment]
+    div hello conditional comment
+'''
 # '''
-node =  Root(template_jade, env=Environment())
+from pyjade.ext.jinja import JinjaEnvironment
+node =  Root(template_jade, env=JinjaEnvironment())
 # print node.children[0].children[0]
 # print node.children[0].children[0].children[0].children[2].children
 print node,len(template_jade)

@@ -1,4 +1,3 @@
-from django.template import TemplateDoesNotExist
 from django.template.loaders.filesystem import Loader as DjFSLoader
 from django.template.loaders.app_directories import Loader as DjAppLoader
 
