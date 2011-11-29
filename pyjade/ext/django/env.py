@@ -31,4 +31,7 @@ class DjangoEnvironment(Environment):
         return '{%%%s%%}'%node.statement
 
     def tag_end(self,node):
-        return '{%%%s%%}'%node.closetag
+        return '{%%%s%%}'%node.closetag if node.closetag else ''
+
+    def var(self,node):
+        return '{{%s}}'%node.raw

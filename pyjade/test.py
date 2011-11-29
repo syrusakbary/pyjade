@@ -78,8 +78,9 @@ html(lang="en")
     div hello conditional comment
 '''
 # '''
-from pyjade.ext.jinja import JinjaEnvironment
-node =  Root(template_jade, env=JinjaEnvironment())
+from pyjade.ext.jinja import JinjaEnvironment as Environment
+#from pyjade.ext.django import DjangoEnvironment as Environment
+node =  Root(template_jade, env=Environment())
 # print node.children[0].children[0]
 # print node.children[0].children[0].children[0].children[2].children
 print node,len(template_jade)

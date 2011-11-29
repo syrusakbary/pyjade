@@ -301,7 +301,7 @@ class VarNode (TextNode):
         super(TextNode,self).__init__(*args,**kwargs)
         self._nested = True
     def __str__(self):
-        return '{{%s}}'%self.raw
+        return self.env.var(self)
 
 class MultiTextNode (Node):
     def __init__(self,*args,**kwargs):

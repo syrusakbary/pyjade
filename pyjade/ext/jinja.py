@@ -32,6 +32,9 @@ class JinjaEnvironment(Environment):
     def tag_end(self,node):
         return '{%%%s%%}'%(('-' if node.statement[-1]=='-' else '')+node.closetag) if node.closetag else ''
 
+    def var(self,node):
+        return '{{%s}}'%node.raw
+
 class PyJadeExtension(Extension):
 
     def __init__(self, environment):
