@@ -46,7 +46,7 @@ class PyJadeExtension(Extension):
         )
 
     def preprocess(self, source, name, filename=None):
-        if not os.path.splitext(name)[1] in \
+        if name and not os.path.splitext(name)[1] in \
             self.environment.jade_file_extensions:
             return source
 

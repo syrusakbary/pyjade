@@ -1,0 +1,6 @@
+Thanks for downloading PyJade.
+
+To install it, make sure you have Python 2.5 or greater installed. Then run
+this command from the command prompt:
+
+    python setup.py install

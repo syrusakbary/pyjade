@@ -4,3 +4,4 @@ basic.py
 dist/*
 build/*
 *.DS_Store
+*.sublime-*
