@@ -25,7 +25,7 @@ class DjangoEnvironment(Environment):
                    'for':['empty'], 
                    'with':['with']}
 
-    code_tags = ('for','block','if','ifchanged','ifequal','ifnotequal','else','filter','with','while')
+    code_tags = ('include','extends','for','block','if','ifchanged','ifequal','ifnotequal','else','filter','with','while')
 
     def tag_begin(self,node):
         return '{%%%s%%}'%node.statement
