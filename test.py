@@ -1,6 +1,8 @@
-from env import Environment
-from nodes import Root
-template_jade ='''doctype html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN
+from pyjade.env import Environment
+from pyjade.nodes import Root
+
+templates = (
+'''doctype html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN
 html(lang="en")
   head#a
     title= pageTitle
@@ -15,7 +17,7 @@ html(lang="en")
     %a a
     #container: -for b in c
         for r
-            / a
+            // a
             b: | a
       - if (youAreUsingJade)
         p You are amazing
@@ -26,17 +28,38 @@ html(lang="en")
     as_self.: a b
     :plain
       a b c
+
       c b c
+      
+    :markdown
+      # this is a heading
+      
+      + oh look
+      + it's a list
+      + yay
+
+      and some basic text for good measure.
+      
     for a in b-
-     c
-'''
+      c
+
+    p moo
+
+    this
+
+    is
+
+    a
+
+    test
+''',
 # template_jade = '''label.
   
 #   | Username:
 
 #     input(name='user[name]')
 
-template_jade = '''!!! 5
+'''!!! 5
 html(lang="en")
   head
     title= pageTitle
@@ -53,9 +76,9 @@ html(lang="en")
         p You are amazing
       - else
         p Get on it!
-'''
+''',
 
-template_jade = '''!!! 5
+'''!!! 5
 html(lang="en")
   head
     title= pageTitle
@@ -70,17 +93,32 @@ html(lang="en")
         p You are amazing
       else
         p Get on it!
-'''
-'''  //
+        
+    //
     a.link#myweb(href="http://syrusakbary.com" rel="_blank") Link to my web
     div hello comment
   //[Conditional Comment]
     div hello conditional comment
 '''
-# '''
+)
+
+
 from pyjade.ext.jinja import JinjaEnvironment as Environment
 #from pyjade.ext.django import DjangoEnvironment as Environment
-node =  Root(template_jade, env=Environment())
-# print node.children[0].children[0]
-# print node.children[0].children[0].children[0].children[2].children
-print node,len(template_jade)
+
+for template in templates:
+    print Root(template, env=Environment())
+
+
+#for template in templates:
+#    try:
+#        node =  Root(template, env=Environment())
+        # print node.children[0].children[0]
+        # print node.children[0].children[0].children[0].children[2].children
+        #        print node #, len(template_jade)
+    #except Exception as detail:
+    #    print "==== ERROR ===="
+    #    print "template:"
+    #    print template
+    #    print "reason:", detail
+    #    pass

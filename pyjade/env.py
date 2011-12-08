@@ -1,3 +1,13 @@
+
+def _filter_markdown(text, outer_indent='', inner_indent='  ', extensions=['extra']):
+    from markdown import markdown
+    if len(outer_indent) >= 1:
+        text = ''.join([line.replace(outer_indent+inner_indent, '',1)+'\n' for line in text.split('\n')])
+        
+    text = markdown(text, extensions)
+    return ''.join([outer_indent+line+'\n' for line in text.split('\n')])
+
+    
 class Environment(object):
     auto_close_tags = {}
     may_contain_tags = {}
@@ -12,8 +22,8 @@ class Environment(object):
         '1.1':'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">', 
         'xml':'<?xml version="1.0" encoding="utf-8" ?>'
     }
-    doctype_tags = ('!!!','doctype')
-    html_plain_text = ('script','style','pre')
+    doctype_tags = ('!!!', 'doctype')
+    html_plain_text = ('script', 'style', 'pre')
     html_self_close = (
         'meta'
       , 'img'
@@ -45,14 +55,18 @@ class Environment(object):
       , 'strong'
       , 'sub'
       , 'sup'
-  )
+    )
+    
     html_default = 'div'
-    filters = {
-        'plain':lambda x:x,
-        'cdata':lambda x:'<![CDATA[\n' + x + '\n]]>',
-    }
+
     write_empty_lines = False
     nl = None       # None == Auto indent
     indent = None   # None == Auto indent
     # nl = ''
     # indent = ''
+    
+    filters = {
+        'plain': lambda text: text,
+        'cdata': lambda text: '<![CDATA[\n' + text + '\n]]>',
+        'markdown': _filter_markdown
+    }
