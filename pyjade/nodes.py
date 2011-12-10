@@ -1,3 +1,4 @@
+from copy import copy
 import re
 
 class Node(object):
@@ -95,7 +96,7 @@ class Node(object):
     def _should_insert_node(self, node):
         return self.inline_nl() and self.is_empty(node)
 
-    def _should_go_inside_last_node(self, node=None,depth=None):
+    def _should_go_inside_last_node(self, node=None, depth=None):
         depth = node.depth if depth == None else depth
         last = self.last
 
@@ -145,13 +146,15 @@ class Node(object):
         # if self._should_go_inside_last_node(): self.children[-1].create_node(string,**kwargs)
         kwargs['env'] = kwargs.get('env', self.env)
         kwargs['plain'] = plain
+
         if not plain.strip():
-            if self.env.write_empty_lines:
+            if kwargs['env'].write_empty_lines:
                 return EmptyNode(**kwargs)
             return None
         spaces, _type, content = self.TYPE_RE.match(plain).groups()
         spaces = kwargs.pop('indent', spaces)
         #content = kwargs.pop('raw',content)
+            
         return self.last_children(len(spaces)).get_node(indent=spaces, type=_type, raw=content, **kwargs)
     
     def get_node(self, **kwargs):
@@ -160,7 +163,7 @@ class Node(object):
         _type = _type or ('-' if splitted[0] in self.env.code_tags else _type)
         # try:
         if _type in ('%',''):
-            return HTMLNode(force=(_type=='%'), **kwargs)
+            return HTMLNode(force=(_type == '%'), **kwargs)
 
         elif _type == '-':
             return TagNode(**kwargs)
@@ -198,8 +201,33 @@ class Root(Node):
         super(Root, self).__init__(raw=lines, **kwargs)
         self.depth = None
         self.globaldepth = -1
+        
+        env_stack = [self.env]
+        depth_stack = [0]
         for line in lines.splitlines():
-            self.add(self.create_node(line))
+            #if ':plain' in line:
+            #    import pudb; pudb.set_trace()
+
+            kwargs['env'] = env_stack[-1]
+            new_node = self.create_node(line, **kwargs)
+
+            if new_node and new_node.env is not env_stack[-1]:
+                if new_node.depth > depth_stack[-1]:
+                    env_stack.append(new_node.env)
+                    depth_stack.append(new_node.depth)
+                    
+                elif new_node.depth == depth_stack[-1]:
+                    env_stack[-1] = new_node.env
+            
+                
+            elif new_node and new_node.depth <= depth_stack[-1] and new_node.depth > 0:
+                while new_node.depth <= depth_stack[-1] and depth_stack[-1] > 0:
+                    env_stack.pop()
+                    depth_stack.pop()
+                #kwargs['env'] = env_stack[-1]
+                #new_node = self.create_node(line, **kwargs)
+            
+            self.add(new_node)
             
     def can_have_children(self):
         return True
@@ -207,29 +235,41 @@ class Root(Node):
     def __str__(self):
         return self.content()
 
+
 def equilibrate_parenthesis(string):
-    par = 0
+    parens = 0
     es_st = False
     es_st2 = False
-    a = iter(string)
+    #a = iter(string)
     ant = False
     r = False
-    for c in a:
+    for char in string:
         # print c, r
         b = es_st or es_st2
-        if c=='"' and (not es_st2 and not r): es_st=not es_st
-        elif c=="'"  and (not es_st and not r): es_st2=not es_st
+        if char == '"' and (not es_st2 and not r):
+            es_st=not es_st
+        elif char == "'"  and (not es_st and not r):
+            es_st2=not es_st
         elif not b:
-            if c=='(': par+=1
-            elif c==')': par-=1
-        if par == 0: break
-        ant,antc = c=='\\',ant
-        if ant and not r: r = not r
-        else: r = False
+            if char =='(':
+                parens += 1
+            elif char ==')':
+                parens -= 1
+        if parens == 0:
+            break
+        
+        ant, antc = char == '\\', ant
+        if ant and not r:
+            r = not r
+        else:
+            r = False
+    
     ls = len(string)
-    s= a.__length_hint__() or -ls
-    if s==ls-1: s=0
-    return string[:-s],string[-s:]
+    s = iter(string).__length_hint__() or -ls
+    if s == ls-1:
+        s = 0
+    return string[:-s], string[-s:]
+
 
 class HTMLNode(Node):
     # def __new__ (self,force,raw,**kwargs):
@@ -241,8 +281,10 @@ class HTMLNode(Node):
     ATTR_CLASS_RE = ATTR_RE('class')
     ATTR_ID_RE = ATTR_RE('id')
     TAG_CLASS_ID = re.compile(r'([\.#])')
-    def __init__(self,force=False,*args, **kwargs):
-        super(HTMLNode,self).__init__(*args, **kwargs)
+
+    
+    def __init__(self, force=False, *args, **kwargs):
+        super(HTMLNode, self).__init__(*args, **kwargs)
 
         completetag, sec = self.RE.match(self.raw).groups()
         # _,self.attributes,child_type,child_raw
@@ -254,6 +296,7 @@ class HTMLNode(Node):
         tag_splitted = self.TAG_CLASS_ID.split(completetag)
         self.tag = tag_splitted.pop(0) or self.env.html_default
         self.only_text = child_type == '.' or self.tag in self.env.html_plain_text
+        
         parts = zip(tag_splitted[0::2], tag_splitted[1::2])
         self.tag_class = []
         self.tag_id = []
@@ -274,20 +317,12 @@ class HTMLNode(Node):
             
         if child_raw:
             if child_type == ':':
-                # maintaining line breaks is important for certain filters
-                # to parse the contents correctly.
-                # TODO: figure out how to revert back to the original value
-                #       after the filter node is done parsing its contents.
-                if not self.env.write_empty_lines:
-                    self.env.write_empty_lines = True
-
-                
                 self.add(self.create_node(plain=child_raw, indent=self.indent, nested=True, env=self.env))
                 
             elif child_type == '=':
-                self.add(VarNode(nested=True,raw=child_raw,env=self.env))
+                self.add(VarNode(nested=True, raw=child_raw, env=self.env))
             else:
-                self.add(TextNode(raw=child_raw,nested=True,env=self.env))
+                self.add(TextNode(raw=child_raw, nested=True, env=self.env))
         
         self._nested |= self.tag in self.env.html_inline
         self.self_close = child_type=='/' or self.tag in self.env.html_self_close
@@ -301,12 +336,12 @@ class HTMLNode(Node):
 
     def replace_class_attrs(self, match):
         attr,delim,value = self.replace_attrs(match)
-        value = ' '.join(self.tag_class+[value])
+        value = ' '.join(self.tag_class + [value])
         return self._print_attr(attr, delim, value)
 
     def replace_id_attrs(self, match):
         attr,delim,value = self.replace_attrs(match)
-        value = '_'.join(self.tag_id+[value])
+        value = '_'.join(self.tag_id + [value])
         return self._print_attr(attr, delim, value)
         
     def _print_attr(self, attr, delim, value):
@@ -344,7 +379,7 @@ class TagNode (Node):
         return self.env.tag_end(self)
     
     def should_contain(self, node):
-        return isinstance(node,TagNode) and node.tag in self.env.may_contain_tags.get(self.tag, '')
+        return isinstance(node, TagNode) and node.tag in self.env.may_contain_tags.get(self.tag, '')
     
     def can_have_children(self):
         return self.tag in self.env.auto_close_tags
@@ -373,7 +408,7 @@ class PlainTextNode (Node):
 
 class VarNode (TextNode):
     def __init__(self, *args, **kwargs):
-        super(TextNode,self).__init__(*args, **kwargs)
+        super(TextNode, self).__init__(*args, **kwargs)
         self._nested = True
 
     def __str__(self):
@@ -381,7 +416,7 @@ class VarNode (TextNode):
 
 class MultiTextNode (Node):
     def __init__(self, *args, **kwargs):
-        super(MultiTextNode,self).__init__(*args, **kwargs)
+        super(MultiTextNode, self).__init__(*args, **kwargs)
         if self.raw:
             self.add(TextNode(env=self.env, raw=self.raw, nested=True, indent=self.indent))
 
@@ -395,6 +430,11 @@ class FilterNode (Node):
     def __init__(self, raw, *args, **kwargs):
         super(FilterNode, self).__init__(*args, **kwargs)
         self.filters = [self.get_filter(_filter) for _filter in raw.split(' ')]
+
+        # Maintaining the original formatting of the text is important for certain filters
+        self.env = copy(self.env)
+        self.env.write_empty_lines = True
+
 
     def __str__(self):
         #self.indent+
@@ -421,9 +461,10 @@ class FilterNode (Node):
         return PlainTextNode(**kwargs)
 
 
+
 class HTMLCommentNode(Node):
     def __init__(self, *args, **kwargs):
-        super(HTMLCommentNode,self).__init__(*args, **kwargs)
+        super(HTMLCommentNode, self).__init__(*args, **kwargs)
         self.conditional = self._is_conditional(self.raw)
         if self.raw:
             self.add(TextNode(env=self.env, raw=self.raw+('>' if self.conditional else ''), nested=True, indent=self.indent))
