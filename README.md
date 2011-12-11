@@ -90,7 +90,7 @@ Example
 -------
 
 This code:
-
+```jade
 	!!! 5
 	html(lang="en")
 	  head
@@ -106,6 +106,7 @@ This code:
 	        p You are amazing
 	      else
 	        p Get on it!
+```
 
 
 Converts to:
