@@ -1,3 +1,6 @@
+from filters import plain_filter, cdata_filter, markdown_filter, rst_filter
+
+
 class Environment(object):
     auto_close_tags = {}
     may_contain_tags = {}
@@ -12,8 +15,8 @@ class Environment(object):
         '1.1':'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">', 
         'xml':'<?xml version="1.0" encoding="utf-8" ?>'
     }
-    doctype_tags = ('!!!','doctype')
-    html_plain_text = ('script','style','pre')
+    doctype_tags = ('!!!', 'doctype')
+    html_plain_text = ('script', 'style', 'pre')
     html_self_close = (
         'meta'
       , 'img'
@@ -45,14 +48,19 @@ class Environment(object):
       , 'strong'
       , 'sub'
       , 'sup'
-  )
+    )
+    
     html_default = 'div'
-    filters = {
-        'plain':lambda x:x,
-        'cdata':lambda x:'<![CDATA[\n' + x + '\n]]>',
-    }
+
     write_empty_lines = False
     nl = None       # None == Auto indent
     indent = None   # None == Auto indent
     # nl = ''
     # indent = ''
+    
+    filters = {
+        'plain': plain_filter,
+        'cdata': cdata_filter,
+        'markdown': markdown_filter,
+        'restructured': rst_filter,
+    }
