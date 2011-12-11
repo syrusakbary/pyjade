@@ -1,13 +1,6 @@
+from filters import plain_filter, cdata_filter, markdown_filter, rst_filter
 
-def _filter_markdown(text, outer_indent='', inner_indent='  ', extensions=['extra']):
-    from markdown import markdown
-    if len(outer_indent) >= 1:
-        text = ''.join([line.replace(outer_indent+inner_indent, '',1)+'\n' for line in text.split('\n')])
-        
-    text = markdown(text, extensions)
-    return ''.join([outer_indent+line+'\n' for line in text.split('\n')])
 
-    
 class Environment(object):
     auto_close_tags = {}
     may_contain_tags = {}
@@ -66,7 +59,8 @@ class Environment(object):
     # indent = ''
     
     filters = {
-        'plain': lambda text: text,
-        'cdata': lambda text: '<![CDATA[\n' + text + '\n]]>',
-        'markdown': _filter_markdown
+        'plain': plain_filter,
+        'cdata': cdata_filter,
+        'markdown': markdown_filter,
+        'restructured': rst_filter,
     }

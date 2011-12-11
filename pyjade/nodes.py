@@ -440,10 +440,7 @@ class FilterNode (Node):
         #self.indent+
         content = self.content()
         for name, _filter in reversed(self.filters):
-            if name == 'markdown':
-                content = _filter(content, self.indent)
-            else:
-                content = _filter(content)
+            content = _filter(content, self.indent)
         return content
         #return reduce(lambda x, y: y(x), [self.content()]+list(reversed(self.filters)))
         #.replace(self.nl+self.indent,self.nl).replace(self.nl,self.nl+self.indent)

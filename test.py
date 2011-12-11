@@ -34,24 +34,19 @@ html(lang="en")
     :markdown
       # this is a heading
       
-      + oh look
-      + it's a list
-      + yay
+      * oh look
+      * it's a list
+      * yay
 
       and some basic text for good measure.
-      
+
+
+    :restructured
+      this is testing the **reStructuredText** filter.
+
+    
     for a in b-
       c
-
-    p moo
-
-    this
-
-    is
-
-    a
-
-    test
 ''',
 # template_jade = '''label.
   
