@@ -31,7 +31,7 @@ html(lang="en")
 
       c b c
       
-    :markdown
+    //:markdown
       # this is a heading
       
       * oh look
@@ -41,7 +41,7 @@ html(lang="en")
       and some basic text for good measure.
 
 
-    :restructured
+    //:restructured
       this is testing the **reStructuredText** filter.
 
     

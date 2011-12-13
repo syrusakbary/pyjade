@@ -235,40 +235,29 @@ class Root(Node):
     def __str__(self):
         return self.content()
 
-
 def equilibrate_parenthesis(string):
-    parens = 0
+    par = 0
     es_st = False
     es_st2 = False
-    #a = iter(string)
+    a = iter(string)
     ant = False
     r = False
-    for char in string:
+    for c in a:
         # print c, r
         b = es_st or es_st2
-        if char == '"' and (not es_st2 and not r):
-            es_st=not es_st
-        elif char == "'"  and (not es_st and not r):
-            es_st2=not es_st
+        if c=='"' and (not es_st2 and not r): es_st=not es_st
+        elif c=="'"  and (not es_st and not r): es_st2=not es_st
         elif not b:
-            if char =='(':
-                parens += 1
-            elif char ==')':
-                parens -= 1
-        if parens == 0:
-            break
-        
-        ant, antc = char == '\\', ant
-        if ant and not r:
-            r = not r
-        else:
-            r = False
-    
+            if c=='(': par+=1
+            elif c==')': par-=1
+        if par == 0: break
+        ant,antc = c=='\\',ant
+        if ant and not r: r = not r
+        else: r = False
     ls = len(string)
-    s = iter(string).__length_hint__() or -ls
-    if s == ls-1:
-        s = 0
-    return string[:-s], string[-s:]
+    s= a.__length_hint__() or -ls
+    if s==ls-1: s=0
+    return string[:-s],string[-s:]
 
 
 class HTMLNode(Node):

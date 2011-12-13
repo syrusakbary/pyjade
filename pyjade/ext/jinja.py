@@ -25,23 +25,23 @@ class JinjaEnvironment(Environment):
                         'for': ['empty'], 
                         'with': ['with'] }
 
-    code_tags = ('include', 'extends', 'for', 'block', 'if', 'else', 'elif', 'filter', 'with', 'while', 'set')
+    code_tags = ('include', 'extends', 'for', 'block', 'if', 'else', 'elif', 'filter', 'with', 'while', 'set','macro')
 
     def tag_begin(self, node):
-        return '{%% %s %%}' % (node.statement)
+        return '{%%%s%%}' % (node.statement)
 
     def tag_end(self, node):
         tag = ''
         if node.closetag:
             if node.statement[-1] == '-':
                 tag = '-'
-            tag = '{%% %s %%}' % (tag + node.closetag)
+            tag = '{%%%s%%}' % (tag + node.closetag)
 
         return tag
         #return '{%% %s %%}' % (('-' if node.statement[-1]=='-' else '') + node.closetag) if node.closetag else ''
 
     def var(self, node):
-        return '{{ %s }}' % (node.raw)
+        return '{{%s}}' % (node.raw)
 
 
 class PyJadeExtension(Extension):
