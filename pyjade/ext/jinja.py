@@ -16,6 +16,7 @@ class JinjaEnvironment(Environment):
                        'spaceless': 'endspaceless',
                        'comment': 'endcomment',
                        'cache': 'endcache',
+                       'macro': 'endmacro',
                        'localize': 'endlocalize',
                        'compress': 'endcompress' }
 
