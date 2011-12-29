@@ -94,6 +94,9 @@ html(lang="en")
     div hello comment
   //[Conditional Comment]
     div hello conditional comment
+''','''
+a.document_new.grid_4(href='{{ url("document_create")}}') prueba
+a.document_new.grid_4(href="{{ url('document_create')}}") prueba
 '''
 )
 

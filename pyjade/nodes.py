@@ -246,7 +246,7 @@ def equilibrate_parenthesis(string):
         # print c, r
         b = es_st or es_st2
         if c=='"' and (not es_st2 and not r): es_st=not es_st
-        elif c=="'"  and (not es_st and not r): es_st2=not es_st
+        elif c=="'"  and (not es_st and not r): es_st2=not es_st2
         elif not b:
             if c=='(': par+=1
             elif c==')': par-=1
