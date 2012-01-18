@@ -267,8 +267,8 @@ class HTMLNode(Node):
     #     return super(HTMLNode,self).__new__(self,raw=raw,**kwargs)
     RE = re.compile('^([\w#\-.\_]*)(.*)$')
     ATTR_RE = lambda attr: re.compile(r'''(%s\s*)(\s*(="([^"]*)")|\s*(='([^']*)')|\s*=(\S*)|(?=\s|$))''' % (attr))
-    ATTR_CLASS_RE = ATTR_RE('class')
-    ATTR_ID_RE = ATTR_RE('id')
+    #ATTR_CLASS_RE = ATTR_RE('class')
+    #ATTR_ID_RE = ATTR_RE('id')
     TAG_CLASS_ID = re.compile(r'([\.#])')
 
     
@@ -294,14 +294,14 @@ class HTMLNode(Node):
             if type_=='.': self.tag_class.append(value)
             elif type_=='#':self.tag_id.append(value)
 
-        self.attributes,changes_class = self.ATTR_CLASS_RE.subn(self.replace_class_attrs, self.attributes or '')
-        self.attributes,changes_id = self.ATTR_ID_RE.subn(self.replace_id_attrs, self.attributes or '')
+        #self.attributes,changes_class = self.ATTR_CLASS_RE.subn(self.replace_class_attrs, self.attributes or '')
+        #self.attributes,changes_id = self.ATTR_ID_RE.subn(self.replace_id_attrs, self.attributes or '')
         # print child_type,self.only_text, self.tag
 
-        if self.tag_class and not changes_class:    
+        if self.tag_class: # and not changes_class:    
             self.attributes = self._print_attr('class', '"', ' '.join(self.tag_class)) + ((' '+self.attributes) if self.attributes else '')
 
-        if self.tag_id and not changes_id:
+        if self.tag_id: # and not changes_id:
             self.attributes = self._print_attr('id', '"', ' '.join(self.tag_id)) + ((' '+self.attributes) if self.attributes else '')
             
         if child_raw:
