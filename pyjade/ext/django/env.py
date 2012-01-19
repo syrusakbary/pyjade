@@ -34,4 +34,6 @@ class DjangoEnvironment(Environment):
         return '{%%%s%%}'%node.closetag if node.closetag else ''
 
     def var(self,node):
-        return '{{%s}}'%node.raw
+        if not node.escape:
+          return '{{%s}}'%node.raw
+        return '{%% filter force_escape %%}{{%s}}{%% endfilter %%}'%node.raw

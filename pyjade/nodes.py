@@ -280,6 +280,8 @@ class HTMLNode(Node):
         self.attributes, child = equilibrate_parenthesis(sec)
         self.attributes = self.attributes.strip('()')
         child_type = child and child[0].strip()
+        if child_type == '!':
+          child_type = child[:2].strip()
         child_raw = child and child[len(child_type)+1:]
 
         tag_splitted = self.TAG_CLASS_ID.split(completetag)
@@ -303,13 +305,15 @@ class HTMLNode(Node):
 
         if self.tag_id and not changes_id:
             self.attributes = self._print_attr('id', '"', ' '.join(self.tag_id)) + ((' '+self.attributes) if self.attributes else '')
-            
+
         if child_raw:
             if child_type == ':':
                 self.add(self.create_node(plain=child_raw, indent=self.indent, nested=True, env=self.env))
                 
             elif child_type == '=':
                 self.add(VarNode(nested=True, raw=child_raw, env=self.env))
+            elif child_type == '!=':
+              self.add(VarNode(nested=True, raw=child_raw, env=self.env, escape=False))
             else:
                 self.add(TextNode(raw=child_raw, nested=True, env=self.env))
         
@@ -396,9 +400,11 @@ class PlainTextNode (Node):
         return self.plain
 
 class VarNode (TextNode):
-    def __init__(self, *args, **kwargs):
+    escape = True
+    def __init__(self, escape = True, *args, **kwargs):
         super(TextNode, self).__init__(*args, **kwargs)
         self._nested = True
+        self.escape = escape
 
     def __str__(self):
         return self.env.var(self)
