@@ -279,6 +279,7 @@ class HTMLNode(Node):
         # _,self.attributes,child_type,child_raw
         self.attributes, child = equilibrate_parenthesis(sec)
         self.attributes = self.attributes.strip('()')
+        self.attributes = self.replace_var_attrs()
         child_type = child and child[0].strip()
         if child_type == '!':
           child_type = child[:2].strip()
@@ -320,6 +321,31 @@ class HTMLNode(Node):
         self._nested |= self.tag in self.env.html_inline
         self.self_close = child_type=='/' or self.tag in self.env.html_self_close
 
+
+
+    class AttrNode(object):
+        raw = None
+        escape = True
+
+    def replace_var_attrs(self):
+        attr_array = self.attributes.split(',')
+        for attr_key in range(0, len(attr_array)):
+            pair = attr_array[attr_key].strip().split('=')
+            if len(pair) < 2:
+                continue
+
+            name = pair[0].strip()
+            value = pair[1].strip()
+
+            if value == '':
+                continue
+            if not value.startswith('"') and not value.endswith('"') and not value.startswith("'") and not value.endswith("'"):
+              attr_node = HTMLNode.AttrNode()
+              attr_node.raw = value
+              value = self.env.var(attr_node)
+              attr_array[attr_key] = name + '="' + value + '"'
+
+        return ', '.join(attr_array)
 
     def replace_attrs(self, match):
         attr = match.group(1)
