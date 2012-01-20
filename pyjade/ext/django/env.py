@@ -35,5 +35,5 @@ class DjangoEnvironment(Environment):
 
     def var(self,node):
         if not node.escape:
-          return '{{%s}}'%node.raw
+          return '{{%s|safe}}'%node.raw
         return '{%% filter force_escape %%}{{%s}}{%% endfilter %%}'%node.raw
