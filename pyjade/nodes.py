@@ -345,7 +345,7 @@ class HTMLNode(Node):
               value = self.env.var(attr_node)
               attr_array[attr_key] = name + '="' + value + '"'
 
-        return ', '.join(attr_array)
+        return ' '.join(attr_array)
 
     def replace_attrs(self, match):
         attr = match.group(1)
