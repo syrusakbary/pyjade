@@ -5,7 +5,6 @@ import os
 
 
 class JinjaEnvironment(Environment):
-    
     auto_close_tags = {'for': 'endfor',
                        'if': 'endif',
                        'block': 'endblock',
@@ -18,17 +17,22 @@ class JinjaEnvironment(Environment):
                        'cache': 'endcache',
                        'macro': 'endmacro',
                        'localize': 'endlocalize',
-                       'compress': 'endcompress' }
+                       'compress': 'endcompress'}
 
-    may_contain_tags = {'if': ['elif','else'], 
+    may_contain_tags = {'if': ['elif', 'else'],
                         'trans': ['pluralize'],
-                        'for': ['empty'], 
-                        'with': ['with'] }
+                        'for': ['empty'],
+                        'with': ['with']}
 
-    code_tags = ('include', 'extends', 'for', 'block', 'if', 'else', 'elif', 'filter', 'with', 'while', 'set','macro')
+    code_tags = ('include', 'extends', 'for', 'block', 'if', 'else', 'elif', 'filter', 'with', 'while', 'set', 'macro')
 
     def tag_begin(self, node):
-        return '{%%%s%%}' % (node.statement)
+        statement = node.statement
+        if (statement.startswith('include') and
+            '"' not in statement and '\'' not in statement):
+            template_name = statement.split(' ', 1)[1]
+            statement = 'include "%s.jade"' % template_name
+        return '{%%%s%%}' % statement
 
     def tag_end(self, node):
         tag = ''
