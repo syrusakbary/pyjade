@@ -178,7 +178,7 @@ class Node(object):
             return MultiTextNode(**kwargs)
 
         elif _type == '//':
-            return HTMLCommentNode(**kwargs)
+            return CommentNode(**kwargs)
 
         elif _type == ':':
             return FilterNode(**kwargs)
@@ -496,16 +496,16 @@ class FilterNode (Node):
         return PlainTextNode(**kwargs)
 
 
-class HTMLCommentNode(Node):
+class CommentNode(Node):
     def __init__(self, *args, **kwargs):
-        super(HTMLCommentNode, self).__init__(*args, **kwargs)
-        self.conditional = self._is_conditional(self.raw)
+        super(CommentNode, self).__init__(*args, **kwargs)
+        raw_content = self.raw.strip()
+
+        self.conditional = raw_content and raw_content[0] == '['
+        self.unbuffered = raw_content and raw_content[0] == '-'
+
         if self.raw:
             self.add(TextNode(env=self.env, raw=self.raw + ('>' if self.conditional else ''), nested=True, indent=self.indent))
-
-    def _is_conditional(self, raw):
-        content = raw.strip()
-        return content and content[0] == '['
 
     def can_have_children(self):
         return True
@@ -515,6 +515,11 @@ class HTMLCommentNode(Node):
 
     def end(self):
         return ' -->' if not self.conditional else '<![endif]-->'
+
+    def output(self, begin, end):
+        if self.unbuffered:
+            return ''
+        return super(CommentNode, self).output(begin, end)
 
     def __str__(self):
         return self.output(True, True)
