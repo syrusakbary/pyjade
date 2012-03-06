@@ -353,9 +353,16 @@ class HTMLNode(Node):
                 attr_node = HTMLNode.AttrNode()
                 attr_node.raw = value
                 value = self.env.var(attr_node)
-                attr_array[attr_key] = name + '="' + value + '"'
+                if name.endswith('?'):
+                    attr_str = name[:-1] + '="' + value + '"'
+                    attr_str = '{% if ' + value.strip('{}') + ' %} ' + attr_str + '{% endif %}'
+                else:
+                    attr_str = name + '="' + value + '"'
+                attr_array[attr_key] = attr_str
 
-        return ' '.join(attr_array)
+        res = ' '.join(i for i in attr_array if '{%' not in i)
+        res += ''.join(i for i in attr_array if '{%' in i)
+        return res
 
     def replace_attrs(self, match):
         attr = match.group(1)
