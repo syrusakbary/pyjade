@@ -518,7 +518,7 @@ class CommentNode(Node):
         return True
 
     def begin(self):
-        return '<!-- '
+        return '<!-- ' if not self.conditional else '<!--'
 
     def end(self):
         return ' -->' if not self.conditional else '<![endif]-->'
