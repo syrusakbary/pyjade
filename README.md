@@ -3,6 +3,7 @@ PyJade
 
 PyJade is a high performance template preprocessor, that converts any .jade source to the each Template-language (Django, Jinja2 or Mako).
 
+********************************************************************
 
 INSTALLATION
 ============
@@ -87,7 +88,7 @@ The same as the Jade Node.js module (except of no commas on attributes):
 https://github.com/visionmedia/jade/blob/master/Readme.md
 
 Main differences
-****************
+----------------
 
 Interpolation is not supported, so you must use the interpolation of the template engine.
 Instead of do `{#somevar}` just do `{{somevar}}` in Jinja2 or Django
