@@ -1,0 +1,7 @@
+*.pyc
+basic.py
+*.egg-info
+dist/*
+build/*
+*.DS_Store
+*.sublime-*
