@@ -1,3 +1,4 @@
+import re
 doctypes = {
     '5': '<!DOCTYPE html>'
   , 'xml': '<?xml version="1.0" encoding="utf-8" ?>'
@@ -41,9 +42,13 @@ selfClosing = [
   , 'br'
   , 'hr'
 ]
-filters = []
+filters = {
+    'cdata':lambda x,y:'<![CDATA[\n%s\n]]>'%x
+}
+autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress'.split(',')
 
 class Compiler(object):
+    RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
     def __init__(self,node,**options):
         self.options = options
         self.node = node
@@ -131,7 +136,7 @@ class Compiler(object):
             self.hasCompiledTag = True
 
         if self.pp and name not in inlineTags:
-            self.buffer('\n'+' '*(self.indents-1))
+            self.buffer('\n'+'  '*(self.indents-1))
 
         closed = name in selfClosing and not self.xml
         self.buffer('<%s'%name)
@@ -140,28 +145,41 @@ class Compiler(object):
 
         if not closed:
             if tag.code: self.visitCode(tag.code)
-            if tag.text: self.buffer(tag.text.nodes[0].lstrip())
+            if tag.text: self.buffer(self.interpolate(tag.text.nodes[0].lstrip()))
             self.escape = 'pre'==tag.name
             self.visit(tag.block)
 
             if self.pp and not name in inlineTags and not tag.textOnly:
-                self.buffer('\n'+' '*(self.indents-1))
+                self.buffer('\n'+'  '*(self.indents-1))
 
             self.buffer('</%s>'%name)
         self.indents -= 1
 
     def visitFilter(self,filter):
+        if filter.name not in filters:
+          if filter.isASTFilter:
+            raise Exception('unknown ast filter "%s:"'%filter.name)
+          else:
+            raise Exception('unknown filter "%s:"'%filter.name)
+
         fn = filters.get(filter.name)
         if filter.isASTFilter:
             self.buf.append(fn(filter.block,self,filter.attrs))
         else:
             text = ''.join(filter.block.nodes)
+            text = self.interpolate(text)
             filter.attrs = filter.attrs or {}
-            filter.attrs.filename = self.options.filename
+            filter.attrs['filename'] = self.options.get('filename',None)
             self.buffer(fn(text,filter.attrs))
 
+    def _interpolate(self,attr,repl):
+        return self.RE_INTERPOLATE.sub(lambda matchobj:repl(matchobj.group(3)),attr)
+
+    def interpolate(self,text):
+        return self._interpolate(text,lambda x:'{{%s}}'%x)
     def visitText(self,text):
         text = ''.join(text.nodes)
+        text = self.interpolate(text)
         self.buffer(text)
         self.buffer('\n')
 
@@ -169,6 +187,15 @@ class Compiler(object):
         if not comment.buffer: return
         if self.pp: self.buffer('\n'+'  '*(self.indents))
         self.buffer('<!--%s-->'%comment.val)
+
+    def visitAssignment(self,assignment):
+        self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))
+
+    def visitExtends(self,node):
+        self.buffer('{%% extends "%s" %%}'%(node.path))
+
+    def visitInclude(self,node):
+        self.buffer('{%% include "%s" %%}'%(node.path))
 
     def visitBlockComment(self,comment):
         if not comment.buffer: return
@@ -189,20 +216,25 @@ class Compiler(object):
             self.visit(conditional.block)
             for next in conditional.next:
               self.visitConditional(next)
-        self.buf.append('{% endif %}')
+        if conditional.type in ['if','unless']: self.buf.append('{% endif %}')
 
 
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
-            self.buf.append('{{%s}}'%val)
+            self.buf.append('{{%s%s}}'%(val,'|escape' if code.escape else ''))
         else:
-            self.buf.append(code.val)
+            self.buf.append('{%% %s %%}'%code.val)
 
         if code.block:
-            if not code.buffer: self.buf.append('{')
+            # if not code.buffer: self.buf.append('{')
             self.visit(code.block)
-            if not code.buffer: self.buf.append('}')
+            # if not code.buffer: self.buf.append('}')
+
+        if not code.buffer:
+          codeTag = code.val.strip().split(' ',1)[0]
+          if codeTag in autocloseCode:
+              self.buf.append('{%% end%s %%}'%codeTag)
 
     def visitEach(self,each):
         self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
@@ -230,16 +262,16 @@ class Compiler(object):
             if attr['name'] == 'class':
                 classes.append('(%s)'%attr['val'])
             else:
-                pair = "'%s':(%s)"%(attr['name'],attr['val'])
+                pair = "('%s',(%s))"%(attr['name'],attr['val'])
                 buf.append(pair)
 
         if classes:
             classes = " , ".join(classes)
-            buf.append("class: (%s)"%classes)
+            buf.append("('class', (%s))"%classes)
 
-        buf = ', '.join(buf).replace('class:',"'class':")
+        buf = ', '.join(buf)
         if self.terse: params['terse'] = 'True'
-        if buf: params['attrs'] = '{%s}'%buf
+        if buf: params['attrs'] = '[%s]'%buf
         param_string = ', '.join(['%s=%s'%(n,v) for n,v in params.iteritems()])
         if buf or terse:
             self.buf.append("{{__pyjade_attrs(%s)}}"%param_string)

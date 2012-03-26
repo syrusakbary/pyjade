@@ -34,11 +34,11 @@ class Block(Node):
 class CodeBlock(Block): pass
 
 class Code(Node):
-	def __init__(self,val,buffer):
+	def __init__(self,val,buffer,escape):
 		self.val = val
 		self.block=None
 		self.buffer = buffer
-
+		self.escape = escape
 class Comment(Node):
 	def __init__(self,val,buffer):
 		self.val = val
@@ -55,14 +55,29 @@ class Each(Node):
 		self.keys = keys
 		self.block = block
 
+class Assignment(Node):
+	def __init__(self,name, val):
+		self.name = name
+		self.val = val
+
 class Mixin(Node):
 	def __init__(self,name, args, block=None):
 		self.name = name
 		self.args = args
 		self.block = block
 
+class Extends(Node):
+	def __init__(self,path):
+		self.path = path
+
+class Include(Node):
+	def __init__(self,path,extra=None):
+		self.path = path
+		self.extra = extra
+
 class Conditional(Node):
-	may_contain_tags = {'if': ['elif', 'else']}
+	may_contain_tags = {'if': ['elif', 'else'],
+						'unless': ['elif', 'else']}
 	def __init__(self,type, sentence, block=None):
 		self.type = type
 		self.sentence = sentence
@@ -73,6 +88,7 @@ class Conditional(Node):
 		return type in self.may_contain_tags.get(n,[])
 	def append(self,next):
 		self.next.append(next)
+
 class Filter(Node):
 	def __init__(self,name, block, attrs):
 		self.name = name

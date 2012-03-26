@@ -1,5 +1,6 @@
 from lexer import Lexer
 import nodes
+import os
 
 textOnly = ('script','style')
 
@@ -94,9 +95,13 @@ class Parser(object):
         else:
             return self.block()
 
+    def parseAssignment(self):
+        tok = self.expect('assignment')
+        return nodes.Assignment(tok.name,tok.val)
+
     def parseCode(self):
         tok = self.expect('code')
-        node = nodes.Code(tok.val,tok.buffer) #tok.escape
+        node = nodes.Code(tok.val,tok.buffer,tok.escape) #tok.escape
         block,i = None,1
         node.line = self.line()
         while self.lookahead(i) and 'newline'==self.lookahead(i).type:
@@ -161,15 +166,19 @@ class Parser(object):
         while True:
             t = self.peek()
             if 'conditional' == t.type and node.can_append(t.val):
-                print 'siguiente'
                 node.append(self.parseConditional())
             else:
                 break
         return node
 
-    # def parseExtends(self):
-    #     path = self.expect('extends').val.strip()
-    #     return nodes.Literal('')
+    def format_path(self,path):
+        has_extension = os.path.basename(path).find('.')>-1
+        if not has_extension: path += '.jade'
+        return path
+    def parseExtends(self):
+        path = self.expect('extends').val.strip('"\'')
+        path = self.format_path(path)
+        return nodes.Extends(path)
     
     def parseMixin(self):
         tok = self.expect('mixin')
@@ -187,15 +196,17 @@ class Parser(object):
         block.name = name
         return block
 
-    # def parseInclude():
-    #     return nodes.Literal('')
+    def parseInclude(self):
+        path = self.expect('include').val.strip()
+        path = self.format_path(path)
+        return nodes.Include(path)
 
     def parseTextBlock(self):
         text = nodes.Text()
         text.line = self.line()
         spaces = self.expect('indent').val
         if not self._spaces: self._spaces = spaces
-        indent = ' '*(spaces-self._spaces+1)
+        indent = ' '*(spaces-self._spaces)
         while 'outdent' != self.peek().type:
             t = self.peek().type
             if 'newline'==t:

@@ -1,3 +1,4 @@
+from utils import odict
 def flatten(l, ltypes=(list, tuple)):
     ltype = type(l)
     l = list(l)
@@ -13,15 +14,15 @@ def flatten(l, ltypes=(list, tuple)):
         i += 1
     return ltype(l)
 
-def attrs (attrs={},terse=False):
-	buf = []
-	if bool(attrs):
-		buf.append('')
-		for k,v in attrs.iteritems():
-			if bool(v) or v==None:
-				if k=='class' and isinstance(v, (list, tuple)):
-					v = ' '.join(map(str,flatten(v)))
-				t = v==True
-				if t and not terse: v=k
-				buf.append('%s'%str(k) if terse and t else '%s="%s"'%(k,str(v)))
-	return ' '.join(buf)
+def attrs (attrs=[],terse=False):
+    buf = []
+    if bool(attrs):
+        buf.append('')
+        for k,v in attrs:
+            if v!=None and (v!=False or type(v)!=bool):
+                if k=='class' and isinstance(v, (list, tuple)):
+                    v = ' '.join(map(str,flatten(v)))
+                t = v==True and type(v)==bool
+                if t and not terse: v=k
+                buf.append('%s'%str(k) if terse and t else '%s="%s"'%(k,str(v)))
+    return ' '.join(buf)

@@ -189,7 +189,10 @@ class Lexer(object):
         if captures:
             self.consume(len(captures[0]))
             name,val = captures[1:3]
-            return self.tok('code','{%% set %s = (%s) %%}'%(name,val))
+            tok = self.tok('assignment')
+            tok.name = name
+            tok.val = val
+            return tok
 
     def mixin(self):
         captures = regexec(self.RE_MIXIN,self.input)
@@ -229,8 +232,9 @@ class Lexer(object):
             self.consume(len(captures[0]))
             flags, name = captures[1:]
             tok = self.tok('code',name)
-            tok.escape = flags.startswith('==')
-            tok.buffer = '=' in flags[0:1]
+            tok.escape = flags.startswith('=')
+            #print captures
+            tok.buffer = '=' in flags 
             # print tok.buffer
             return tok
 
@@ -253,7 +257,7 @@ class Lexer(object):
                 return states[-1]
 
             def interpolate(attr):
-                return self.RE_ATTR_INTERPOLATE.sub(lambda matchobj:'%s(%s)%s'%(ns.quote,matchobj.group(0),ns.quote),attr)
+                return self.RE_ATTR_INTERPOLATE.sub(lambda matchobj:'%s+%s.__str__()+%s'%(ns.quote,matchobj.group(1),ns.quote),attr)
 
             self.consume(index+1)
             tok.attrs = odict()
@@ -336,6 +340,7 @@ class Lexer(object):
             self.lineno += 1
             self.consume(indents+1)
 
+            if not self.input: return self.tok('newline')
             if self.input[0] in (' ','\t'):
                 raise Exception('Invalid indentation, you can use tabs or spaces but not both')
 
