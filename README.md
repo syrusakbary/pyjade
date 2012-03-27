@@ -6,7 +6,7 @@ PyJade is a high performance port of Jade-lang for python, that converts any .ja
 
 NOTE
 ----
-This package is completely rewritten in the 1.X version for be an exact port of Jade, so may be some backwards incompatibilities.
+This package is **completely rewritten in the 1.X version** for be an exact port of Jade, so may be some *backwards incompatibilities*.
 
 ********************************************************************
 
