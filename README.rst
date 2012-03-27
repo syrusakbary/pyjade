@@ -57,7 +57,6 @@ Just add  `pyjade.ext.mako.preprocessor` as preprocessor::
         preprocessor=mako_preprocessor
     )
 
-**Actually the mako preprocessor is in development mode**
 
 Flask
 -----
