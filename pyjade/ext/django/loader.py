@@ -4,7 +4,7 @@ from django.template.base import TemplateDoesNotExist
 from django.template.loader import BaseLoader, get_template_from_string, find_template_loader, make_origin
 import os
 
-from pyjade.ext.django import DjangoCompiler
+from pyjade.ext.django import Compiler
 from pyjade import Parser
 
 # from django.template.loaders.cached import Loader
@@ -77,7 +77,7 @@ class Loader(BaseLoader):
     def _preprocess(self, source, name, filename=None):
         parser = Parser(source,filename=filename)
         block = parser.parse()
-        compiler = DjangoCompiler(block)
+        compiler = Compiler(block)
         return compiler.compile().strip()
 
     def reset(self):

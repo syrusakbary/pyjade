@@ -3,6 +3,6 @@ users = [{ 'name': 'tobi', 'age': 2 }]
 
 fb:users
   for user in users
-    fb:user(age=user['age'])
+    fb:user(age=user['age'],name=user['name'])
       :cdata
-        #{user.name}
+        data

@@ -1,9 +1,9 @@
 from jinja2.ext import Extension
 import os
-from pyjade import Parser, Compiler
+from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
 ATTRS_FUNC = '__pyjade_attrs'
-class JinjaCompiler(Compiler):
+class Compiler(_Compiler):
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
         if block.mode=='prepend': self.buffer('{{super()}}')
@@ -69,7 +69,7 @@ class PyJadeExtension(Extension):
 
         parser = Parser(source,filename=name)
         block = parser.parse()
-        compiler = JinjaCompiler(block)
+        compiler = Compiler(block)
         return compiler.compile()
         # procesed= process(source,name)
         # print procesed

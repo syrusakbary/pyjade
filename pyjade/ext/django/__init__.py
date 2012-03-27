@@ -1,9 +1,9 @@
 import os
-from pyjade import Compiler, Parser
+from pyjade import Compiler as _Compiler, Parser
 from pyjade.runtime import attrs
 from pyjade.exceptions import CurrentlyNotSupported
 
-class DjangoCompiler(Compiler):
+class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)

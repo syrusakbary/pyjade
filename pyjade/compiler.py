@@ -69,8 +69,11 @@ class Compiler(object):
         self.xml = False
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
 
+    def compile_top(self):
+        return ''
+    
     def compile(self):
-        self.buf = ['']
+        self.buf = [self.compile_top()]
         self.lastBufferedIdx = -1
         self.visit(self.node)
         return ''.join(self.buf)

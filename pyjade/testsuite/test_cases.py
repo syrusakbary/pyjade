@@ -65,7 +65,7 @@ try:
     def django_process(str):
         parser = pyjade.Parser(str,filename=None)
         block = parser.parse()
-        compiler = pyjade.ext.django.DjangoCompiler(block)
+        compiler = pyjade.ext.django.Compiler(block)
         compiled = compiler.compile()
         print compiled
         t = django.template.Template(compiled)
@@ -76,10 +76,31 @@ try:
         #     ctx.push()
         #     ctx.update(d)
         # t = django.template.loader.get_template(name)
-        t = pyjade.ext.django.Loader._process(str)
-        return t.render(ctx)
+        # t = pyjade.ext.django.Loader._process(str)
+        # return t.render(ctx)
 
     processors['Django'] = django_process
+except Exception,e:
+    raise e
+
+try:
+    import pyjade.ext.mako
+    import mako.template
+    from mako.lookup import TemplateLookup
+    dirlookup = TemplateLookup(directories=['cases/'],preprocessor=pyjade.ext.mako.preprocessor)
+
+    def mako_process(str):
+        
+        # parser = pyjade.Parser(str,filename=None)
+        # block = parser.parse()
+        # compiler = pyjade.ext.mako.Compiler(block)
+        # compiled = compiler.compile()
+        # print compiled
+        t = mako.template.Template(str, lookup=dirlookup,preprocessor=pyjade.ext.mako.preprocessor)
+        return t.render()
+
+    processors['Mako'] = mako_process
+
 except Exception,e:
     raise e
 
