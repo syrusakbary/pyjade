@@ -2,7 +2,12 @@
 PyJade
 ======
 
-PyJade is a high performance template preprocessor, that converts any .jade source to the each Template-language (Django, Jinja2 or Mako).
+PyJade is a high performance port of Jade-lang for python, that converts any .jade source to the each Template-language (Django, Jinja2 or Mako).
+
+
+NOTE
+----
+This package is completely rewritten in the 1.X version for be an exact port of Jade, so may be some backwards incompatibilities.
 
 
 INSTALLATION
@@ -10,11 +15,11 @@ INSTALLATION
 
 First, you must do::
 
-	pip install pyjade
+    pip install pyjade
 
 Or::
 
-	python setup.py install
+    python setup.py install
 
 Now simply **name your templates with a `.jade` extension** and this jade compiler
 will do the rest.  Any templates with other extensions will not be compiled
@@ -26,15 +31,12 @@ Django
 
 In `settings.py`, modify `TEMPLATE_LOADERS` like::
 
-	TEMPLATE_LOADERS = (
-	    'pyjade.ext.django.loaders.FSLoader',
-	    'pyjade.ext.django.loaders.AppLoader',
-	)
-
-These replace your usual Django loaders::
-
-    django.template.loaders.filesystem.Loader
-    django.template.loaders.app_directories.Loader
+    TEMPLATE_LOADERS = (
+        ('pyjade.ext.django.Loader',(
+            'django.template.loaders.filesystem.Loader',
+            'django.template.loaders.app_directories.Loader',
+        )),
+    )
 
 
 Jinja2
@@ -62,7 +64,7 @@ Flask
 
 Just add  `pyjade.ext.jinja.PyJadeExtension` as extension to the environment of the app::
 
-	app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
+    app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
 
 
 Pyramid
@@ -70,60 +72,71 @@ Pyramid
 
 Adjust your "your_project/__init__.py" and add the following line somewhere to in the main() function::
 
-	config.include('pyjade.ext.pyramid')
+    config.include('pyjade.ext.pyramid')
 
 
 Syntax
 ======
 
-The same as the Jade Node.js module (except of no commas on attributes)
+Exactly the same as the Jade Node.js module (except of cases, which are not implemented)
 https://github.com/visionmedia/jade/blob/master/Readme.md
+
+**NOTE: Currently Django has no mixin support**
+
 
 Example
 -------
 
 This code::
 
-	!!! 5
-	html(lang="en")
-	  head
-	    title= pageTitle
-	    script(type='text/javascript')
-	      if (foo) {
-	         bar()
-	      }
-	  body
-	    h1.title Jade - node template engine
-	    #container
-	      if youAreUsingJade
-	        p You are amazing
-	      else
-	        p Get on it!
+    !!! 5
+    html(lang="en")
+      head
+        title= pageTitle
+        script(type='text/javascript')
+          if (foo) {
+             bar()
+          }
+      body
+        h1.title Jade - node template engine
+        #container
+          if youAreUsingJade
+            p You are amazing
+          else
+            p Get on it!
 
 
 Converts to::
 
-	<!DOCTYPE html>
-	<html lang="en">
-	  <head>
-	    <title>{{pageTitle}}</title>
-	    <script type='text/javascript'>
-	      if (foo) {
-	         bar()
-	      }
-	    </script>
-	  </head>
-	  <body>
-	    <h1 class="title">Jade - node template engine</h1>
-	    <div id="container">
-	      {%if youAreUsingJade%}
-	        <p>You are amazing</p>
-	      {%else%}
-	        <p>Get on it!</p>
-	      {%endif%}
-	    </div>
-	  </body>
-	</html>
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <title>{{pageTitle}}</title>
+        <script type='text/javascript'>
+          if (foo) {
+             bar()
+          }
+        </script>
+      </head>
+      <body>
+        <h1 class="title">Jade - node template engine</h1>
+        <div id="container">
+          {%if youAreUsingJade%}
+            <p>You are amazing</p>
+          {%else%}
+            <p>Get on it!</p>
+          {%endif%}
+        </div>
+      </body>
+    </html>
+
+TESTING
+=======
+
+You must have `nose` package installed.
+You can do the tests with::
+    
+    $> ./test.sh
 
 
 TODOs and BUGS

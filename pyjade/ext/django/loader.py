@@ -4,6 +4,7 @@ from django.template.base import TemplateDoesNotExist
 from django.template.loader import BaseLoader, get_template_from_string, find_template_loader, make_origin
 import os
 
+from django.conf import settings
 from pyjade.ext.django import Compiler
 from pyjade import Parser
 
@@ -53,7 +54,7 @@ class Loader(BaseLoader):
             key = '-'.join([template_name, hashlib.sha1('|'.join(template_dirs)).hexdigest()])
 
         
-        if key not in self.template_cache:
+        if settings.DEBUG or key not in self.template_cache:
 
             if os.path.splitext(template_name)[1] in ('.jade',):
                 source, display_name = self.load_template_source(template_name, template_dirs)
