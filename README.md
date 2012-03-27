@@ -65,8 +65,6 @@ mako.template.Template(jade_source,
 )
 ```
 
-**Actually the mako preprocessor is in development mode**
-
 Flask
 -----
 
