@@ -1,54 +1,56 @@
 import re
-doctypes = {
-    '5': '<!DOCTYPE html>'
-  , 'xml': '<?xml version="1.0" encoding="utf-8" ?>'
-  , 'default': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-  , 'transitional': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-  , 'strict': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
-  , 'frameset': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">'
-  , '1.1': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
-  , 'basic': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">'
-  , 'mobile': '<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">'
-}
-inlineTags = [
-    'a'
-  , 'abbr'
-  , 'acronym'
-  , 'b'
-  , 'br'
-  , 'code'
-  , 'em'
-  , 'font'
-  , 'i'
-  , 'img'
-  , 'ins'
-  , 'kbd'
-  , 'map'
-  , 'samp'
-  , 'small'
-  , 'span'
-  , 'strong'
-  , 'sub'
-  , 'sup'
-]
-selfClosing = [
-    'meta'
-  , 'img'
-  , 'link'
-  , 'input'
-  , 'area'
-  , 'base'
-  , 'col'
-  , 'br'
-  , 'hr'
-]
-filters = {
-    'cdata':lambda x,y:'<![CDATA[\n%s\n]]>'%x
-}
-autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress'.split(',')
 
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
+    doctypes = {
+        '5': '<!DOCTYPE html>'
+      , 'xml': '<?xml version="1.0" encoding="utf-8" ?>'
+      , 'default': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+      , 'transitional': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+      , 'strict': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
+      , 'frameset': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">'
+      , '1.1': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
+      , 'basic': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">'
+      , 'mobile': '<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">'
+    }
+    inlineTags = [
+        'a'
+      , 'abbr'
+      , 'acronym'
+      , 'b'
+      , 'br'
+      , 'code'
+      , 'em'
+      , 'font'
+      , 'i'
+      , 'img'
+      , 'ins'
+      , 'kbd'
+      , 'map'
+      , 'samp'
+      , 'small'
+      , 'span'
+      , 'strong'
+      , 'sub'
+      , 'sup'
+    ]
+    selfClosing = [
+        'meta'
+      , 'img'
+      , 'link'
+      , 'input'
+      , 'area'
+      , 'base'
+      , 'col'
+      , 'br'
+      , 'hr'
+    ]
+    autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress'.split(',')
+    
+    filters = {
+        'cdata':lambda x,y:'<![CDATA[\n%s\n]]>'%x
+    }
+
     def __init__(self,node,**options):
         self.options = options
         self.node = node
@@ -56,6 +58,11 @@ class Compiler(object):
         self.hasCompiledTag = False
         self.pp = options.get('pretty',True)
         self.debug = options.get('compileDebug',False)!=False
+        self.filters.update(options.get('filters',{}))
+        self.doctypes.update(options.get('doctypes',{}))
+        self.selfClosing.extend(options.get('selfClosing',[]))
+        self.autocloseCode.extend(options.get('autocloseCode',[]))
+        self.inlineTags.extend(options.get('inlineTags',[]))
         self.indents = 0
         self.doctype = None
         self.terse = False
@@ -69,7 +76,7 @@ class Compiler(object):
         return ''.join(self.buf)
 
     def setDoctype(self,name):
-        self.doctype = doctypes.get(name or 'default','<!DOCTYPE %s>'%name)
+        self.doctype = self.doctypes.get(name or 'default','<!DOCTYPE %s>'%name)
         self.terse = name in ['5','html']
         self.xml = self.doctype.startswith('<?xml')
 
@@ -83,16 +90,16 @@ class Compiler(object):
             self.lastBufferedIdx = len(self.buf)
 
     def visit(self,node):
-        debug = self.debug
-        if debug:
-            self.buf.append('__jade.unshift({ lineno: %d, filename: %s });' % (node.line,('"%s"'%node.filename) if node.filename else '__jade[0].filename'));
+        # debug = self.debug
+        # if debug:
+        #     self.buf.append('__jade.unshift({ lineno: %d, filename: %s });' % (node.line,('"%s"'%node.filename) if node.filename else '__jade[0].filename'));
 
-        if node.debug==False and self.debug:
-            self.buf.pop()
-            self.buf.pop()
+        # if node.debug==False and self.debug:
+        #     self.buf.pop()
+        #     self.buf.pop()
 
         self.visitNode(node)
-        if debug: self.buf.append('__jade.shift();')
+        # if debug: self.buf.append('__jade.shift();')
 
     def visitNode (self,node):
         name = node.__class__.__name__
@@ -135,10 +142,10 @@ class Compiler(object):
                 self.visitDoctype()
             self.hasCompiledTag = True
 
-        if self.pp and name not in inlineTags:
+        if self.pp and name not in self.inlineTags:
             self.buffer('\n'+'  '*(self.indents-1))
 
-        closed = name in selfClosing and not self.xml
+        closed = name in self.selfClosing and not self.xml
         self.buffer('<%s'%name)
         self.visitAttributes(tag.attrs)
         self.buffer('/>' if not self.terse and closed else '>')
@@ -146,23 +153,23 @@ class Compiler(object):
         if not closed:
             if tag.code: self.visitCode(tag.code)
             if tag.text: self.buffer(self.interpolate(tag.text.nodes[0].lstrip()))
-            self.escape = 'pre'==tag.name
+            self.escape = 'pre' == tag.name
             self.visit(tag.block)
 
-            if self.pp and not name in inlineTags and not tag.textOnly:
-                self.buffer('\n'+'  '*(self.indents-1))
+            if self.pp and not name in self.inlineTags and not tag.textOnly:
+                self.buffer('\n')
 
-            self.buffer('</%s>'%name)
+            self.buffer('%s</%s>'%(('  '*(self.indents-1) if not name in self.inlineTags else ''),name))
         self.indents -= 1
 
     def visitFilter(self,filter):
-        if filter.name not in filters:
+        if filter.name not in self.filters:
           if filter.isASTFilter:
             raise Exception('unknown ast filter "%s:"'%filter.name)
           else:
             raise Exception('unknown filter "%s:"'%filter.name)
 
-        fn = filters.get(filter.name)
+        fn = self.filters.get(filter.name)
         if filter.isASTFilter:
             self.buf.append(fn(filter.block,self,filter.attrs))
         else:
@@ -206,9 +213,9 @@ class Compiler(object):
 
     def visitConditional(self,conditional):
         TYPE_CODE = {
-            'if': lambda x: 'if (%s)'%x,
-            'unless': lambda x: 'if not(%s)'%x,
-            'elsif': lambda x: 'elsif(%s)'%x,
+            'if': lambda x: 'if %s'%x,
+            'unless': lambda x: 'if not %s'%x,
+            'elsif': lambda x: 'elsif %s'%x,
             'else': lambda x: 'else'
         }
         self.buf.append('{%% %s %%}'%TYPE_CODE[conditional.type](conditional.sentence))
@@ -233,27 +240,16 @@ class Compiler(object):
 
         if not code.buffer:
           codeTag = code.val.strip().split(' ',1)[0]
-          if codeTag in autocloseCode:
+          if codeTag in self.autocloseCode:
               self.buf.append('{%% end%s %%}'%codeTag)
 
     def visitEach(self,each):
         self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
-      #   self.buf.append(''
-      # + '// iterate ' + each.obj + '\n'
-      # + '(function(){\n'
-      # + '  if (\'number\' == typeof ' + each.obj + '.length) {\n'
-      # + '    for (var ' + each.key + ' = 0, $$l = ' + each.obj + '.length; ' + each.key + ' < $$l; ' + each.key + '++) {\n'
-      # + '      var ' + each.val + ' = ' + each.obj + '[' + each.key + '];\n')
-
-      #   self.visit(each.block)
-      #   self.buf.append(''
-      # + '    }\n'
-      # + '  } else {\n'
-      # + '    for (var ' + each.key + ' in ' + each.obj + ') {\n'
-      # + '      var ' + each.val + ' = ' + each.obj + '[' + each.key + '];\n')
-
         self.visit(each.block)
         self.buf.append('{% endfor %}')
+
+    def attributes(self,attrs):
+        return "{{__pyjade_attrs(%s)}}"%attrs
 
     def visitAttributes(self,attrs):
         buf,classes,params = [],[],{}
@@ -274,4 +270,4 @@ class Compiler(object):
         if buf: params['attrs'] = '[%s]'%buf
         param_string = ', '.join(['%s=%s'%(n,v) for n,v in params.iteritems()])
         if buf or terse:
-            self.buf.append("{{__pyjade_attrs(%s)}}"%param_string)
+            self.buf.append(self.attributes(param_string))
