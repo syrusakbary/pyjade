@@ -5,7 +5,7 @@ import os
 textOnly = ('script','style')
 
 class Parser(object):
-    def __init__(self,str,filename,**options):
+    def __init__(self,str,filename=None,**options):
         self.input = str
         self.lexer = Lexer(str,**options)
         self.filename = filename

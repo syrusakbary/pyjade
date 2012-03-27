@@ -2,7 +2,7 @@ from flask import Flask,render_template
 app = Flask(__name__)
 
 app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
-
+app.debug = True
 @app.route('/')
 @app.route('/<name>')
 def hello(name=None):

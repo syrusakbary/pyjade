@@ -7,9 +7,9 @@ class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
-        if block.mode=='prepend': self.buffer('{{block.super}}')
-        self.visitBlock(block)
         if block.mode=='append': self.buffer('{{block.super}}')
+        self.visitBlock(block)
+        if block.mode=='prepend': self.buffer('{{block.super}}')
         self.buffer('{% endblock %}')
     def visitAssignment(self,assignment):
         self.buffer('{%% __pyjade_set %s = %s %%}'%(assignment.name,assignment.val))

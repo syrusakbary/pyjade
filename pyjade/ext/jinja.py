@@ -2,13 +2,14 @@ from jinja2.ext import Extension
 import os
 from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
+from jinja2.debug import fake_exc_info
 ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
-        if block.mode=='prepend': self.buffer('{{super()}}')
-        self.visitBlock(block)
         if block.mode=='append': self.buffer('{{super()}}')
+        self.visitBlock(block)
+        if block.mode=='prepend': self.buffer('{{super()}}')
         self.buffer('{% endblock %}')
     def visitMixin(self,mixin):
         if mixin.block: 
@@ -54,6 +55,18 @@ class Compiler(_Compiler):
 
 class PyJadeExtension(Extension):
 
+    # def exception_handler(self,pt):
+    #     # print '******************************'
+    #     # print pt.exc_type
+    #     # print pt.exc_value
+    #     # print pt.frames[0].tb
+    #     # line = pt.frames[0].tb.tb_lineno
+    #     # pt.frames[0].tb.tb_lineno = line+10
+
+    #     # print '******************************'
+    #     _,_,tb = fake_exc_info((pt.exc_type,pt.exc_value, pt.frames[0].tb),'asfdasfdasdf',7)
+    #     # pt.frames = [tb]
+    #     raise pt.exc_type, pt.exc_value, tb
     def __init__(self, environment):
         super(PyJadeExtension, self).__init__(environment)
 
@@ -61,6 +74,7 @@ class PyJadeExtension(Extension):
             jade_file_extensions=('.jade',),
             # jade_env=JinjaEnvironment(),
         )
+        # environment.exception_handler = self.exception_handler
         environment.globals[ATTRS_FUNC] = attrs
 
     def preprocess(self, source, name, filename=None):

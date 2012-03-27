@@ -11,9 +11,9 @@ class Compiler(_Compiler):
 
     def visitCodeBlock(self,block):
         self.buffer('<%%block name="%s">'%block.name)
-        if block.mode=='prepend': self.buffer('${parent.%s()}'%block.name)
-        self.visitBlock(block)
         if block.mode=='append': self.buffer('${parent.%s()}'%block.name)
+        self.visitBlock(block)
+        if block.mode=='prepend': self.buffer('${parent.%s()}'%block.name)
         self.buffer('</%block>')
     def visitMixin(self,mixin):
         if mixin.block: 
