@@ -15,11 +15,15 @@ INSTALLATION
 
 First, you must do:
 
+```console
   pip install pyjade
+```
 
 Or:
 
+```console
   python setup.py install
+```
 
 Now simply **name your templates with a `.jade` extension** and this jade compiler
 will do the rest.  Any templates with other extensions will not be compiled
@@ -149,7 +153,7 @@ TESTING
 =======
 
 You must have `nose` package installed.
-You can do the tests with::
+You can do the tests with
     
 ```console
 $> ./test.sh
