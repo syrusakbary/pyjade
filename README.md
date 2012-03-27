@@ -93,12 +93,6 @@ https://github.com/visionmedia/jade/blob/master/Readme.md
 
 **NOTE: Currently Django has no mixin support**
 
-Main differences
-----------------
-
-Interpolation is not supported, so you must use the interpolation of the template engine.
-Instead of do `{#somevar}` just do `{{somevar}}` in Jinja2 or Django
-
 Example
 -------
 
