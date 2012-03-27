@@ -1,0 +1,10 @@
+doctype 5
+html
+	head: title Hello from flask
+	body
+		if name
+			h1(class="red") Hello 
+				= name
+			span.description #{name|capitalize} is a great name!
+		else
+			h1 Hello World!
