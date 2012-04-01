@@ -109,8 +109,8 @@ class Tag(Node):
 		self.attrs = []
 		self.block = block or Block()
 
-	def setAttribute(self,name,val):
-		self.attrs.append(dict(name=name,val=val))
+	def setAttribute(self,name,val,static=True):
+		self.attrs.append(dict(name=name,val=val,static=static))
 		return self
 
 	def removeAttribute(self,name):

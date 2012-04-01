@@ -250,6 +250,8 @@ class Lexer(object):
                 key = ''
                 val = ''
                 quote = ''
+                def reset(self):
+                    self.key = self.val = self.quote = ''
             ns = Namespace()
             
 
@@ -261,7 +263,7 @@ class Lexer(object):
 
             self.consume(index+1)
             tok.attrs = odict()
-
+            tok.static_attrs = set()
             def parse(c):
                 real = c
                 if colons and ':'==c: c = '='
@@ -275,8 +277,10 @@ class Lexer(object):
                         ns.key = ns.key.strip()
                         if not ns.key: return
                         ns.key = ns.key.strip("'\"")
+                        if ns.quote: tok.static_attrs.add(ns.key)
+                        elif ns.key in tok.static_attrs: tok.static_attrs.remove(ns.key)
                         tok.attrs[ns.key] = True if not ns.val else interpolate(ns.val)
-                        ns.key = ns.val = '';
+                        ns.reset()
                 elif '=' == c:
                     s = state()
                     if s == 'key char': ns.key += real

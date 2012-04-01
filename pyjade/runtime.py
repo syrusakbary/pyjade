@@ -24,5 +24,5 @@ def attrs (attrs=[],terse=False):
                     v = ' '.join(map(str,flatten(v)))
                 t = v==True and type(v)==bool
                 if t and not terse: v=k
-                buf.append('%s'%str(k) if terse and t else '%s="%s"'%(k,str(v)))
+                buf.append('%s'%unicode(k) if terse and t else '%s="%s"'%(k,unicode(v)))
     return ' '.join(buf)
