@@ -306,7 +306,7 @@ class Lexer(object):
                     ns.val+=c
                 elif c in ('"',"'"):
                     s = state()
-                    if 'key'==s: states.push('key char')
+                    if 'key'==s: states.append('key char')
                     elif 'key char'==s: states.pop()
                     elif 'string'==s: 
                         if c==ns.quote: states.pop()
