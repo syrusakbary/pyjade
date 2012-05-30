@@ -9,7 +9,7 @@ class Compiler(_Compiler):
 
     def __init__(self, node, **options):
         super(Compiler, self).__init__(node, **options)
-        self.filters['markdown'] = lambda x, y: markdown(x, 'safe')
+        self.filters['markdown'] = lambda x, y: markdown(x)
 
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
