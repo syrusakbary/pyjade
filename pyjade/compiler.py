@@ -33,6 +33,7 @@ class Compiler(object):
       , 'strong'
       , 'sub'
       , 'sup'
+      , 'textarea'
     ]
     selfClosing = [
         'meta'
@@ -218,7 +219,7 @@ class Compiler(object):
         TYPE_CODE = {
             'if': lambda x: 'if %s'%x,
             'unless': lambda x: 'if not %s'%x,
-            'elsif': lambda x: 'elsif %s'%x,
+            'elif': lambda x: 'elif %s'%x,
             'else': lambda x: 'else'
         }
         self.buf.append('{%% %s %%}'%TYPE_CODE[conditional.type](conditional.sentence))
