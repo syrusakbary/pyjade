@@ -1,10 +1,16 @@
 import os
+from django.contrib.markup.templatetags.markup import markdown
 from pyjade import Compiler as _Compiler, Parser
 from pyjade.runtime import attrs
 from pyjade.exceptions import CurrentlyNotSupported
 
 class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
+
+    def __init__(self, node, **options):
+        super(Compiler, self).__init__(node, **options)
+        self.filters['markdown'] = lambda x, y: markdown(x, 'safe')
+
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
         if block.mode=='append': self.buffer('{{block.super}}')
