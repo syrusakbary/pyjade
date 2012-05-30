@@ -91,11 +91,11 @@ try:
 
     def mako_process(str):
         
-        # parser = pyjade.Parser(str,filename=None)
-        # block = parser.parse()
-        # compiler = pyjade.ext.mako.Compiler(block)
-        # compiled = compiler.compile()
-        # print compiled
+        parser = pyjade.Parser(str,filename=None)
+        block = parser.parse()
+        compiler = pyjade.ext.mako.Compiler(block)
+        compiled = compiler.compile()
+        print compiled
         t = mako.template.Template(str, lookup=dirlookup,preprocessor=pyjade.ext.mako.preprocessor)
         return t.render()
 

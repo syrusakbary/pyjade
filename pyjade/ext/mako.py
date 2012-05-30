@@ -4,7 +4,7 @@ from pyjade.runtime import attrs
 ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
     def compile_top(self):
-        return '<%%! from pyjade.runtime import attrs as %s %%>'%ATTRS_FUNC
+        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s %%>'%ATTRS_FUNC
 
     def interpolate(self,text):
         return self._interpolate(text,lambda x:'${%s}'%x)
@@ -49,7 +49,7 @@ class Compiler(_Compiler):
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
-            self.buf.append('${%s%s}'%(val,'|h' if code.escape else '| n'))
+            self.buf.append('${%s%s}'%(val,'| h' if code.escape else '| n'))
         else:
             self.buf.append('<%% %s %%>'%code.val)
 
