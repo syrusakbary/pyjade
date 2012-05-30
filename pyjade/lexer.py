@@ -247,11 +247,15 @@ class Lexer(object):
             colons = self.colons
             states = ['key']
             class Namespace:
-                key = ''
-                val = ''
-                quote = ''
+                key = u''
+                val = u''
+                quote = u''
+                literal = False
                 def reset(self):
-                    self.key = self.val = self.quote = ''
+                    self.key = self.val = self.quote = u''
+                    self.literal = False
+                def __str__(self):
+                    return dict(key=self.key,val=self.val,quote=self.quote,literal=self.literal).__str__()
             ns = Namespace()
             
 
@@ -276,14 +280,20 @@ class Lexer(object):
                         ns.val = ns.val.strip()
                         ns.key = ns.key.strip()
                         if not ns.key: return
+                        ns.literal = ns.literal
+                        if not ns.literal:
+                            if '!'==ns.key[-1]:
+                                ns.literal = True
+                                ns.key = ns.key[:-1]
                         ns.key = ns.key.strip("'\"")
-                        if ns.quote: tok.static_attrs.add(ns.key)
-                        elif ns.key in tok.static_attrs: tok.static_attrs.remove(ns.key)
+                        if ns.literal:
+                            tok.static_attrs.add(ns.key)
                         tok.attrs[ns.key] = True if not ns.val else interpolate(ns.val)
                         ns.reset()
                 elif '=' == c:
                     s = state()
-                    if s == 'key char': ns.key += real
+                    if s == 'key char':
+                        ns.key += real
                     elif s in ('val','expr','array','string','object'): ns.val+= real
                     else: states.append('val')
                 elif '(' == c:
@@ -325,6 +335,7 @@ class Lexer(object):
                 parse(char)
 
             parse(',')
+
             return tok
 
     def indent(self):

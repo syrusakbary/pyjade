@@ -255,7 +255,7 @@ class Compiler(object):
     def attributes(self,attrs):
         return "{{__pyjade_attrs(%s)}}"%attrs
 
-    def visitAttributes(self,attrs):
+    def visitDynamicAttributes(self,attrs):
         buf,classes,params = [],[],{}
         terse='terse=True' if self.terse else ''
         for attr in attrs:
@@ -275,3 +275,15 @@ class Compiler(object):
         param_string = ', '.join(['%s=%s'%(n,v) for n,v in params.iteritems()])
         if buf or terse:
             self.buf.append(self.attributes(param_string))
+    def visitAttributes(self,attrs):
+        temp_attrs = []
+        for attr in attrs:
+            if attr['static']:
+                if temp_attrs:
+                    self.visitDynamicAttributes(temp_attrs)
+                    temp_attrs = []
+                self.buf.append(' %s=%s'%(attr['name'],attr['val']))
+            else:
+                temp_attrs.append(attr)
+        
+        if temp_attrs: self.visitDynamicAttributes(temp_attrs)

@@ -36,7 +36,7 @@ class Compiler(_Compiler):
         TYPE_CODE = {
             'if': lambda x: 'if %s'%x,
             'unless': lambda x: 'if not %s'%x,
-            'elsif': lambda x: 'elsif %s'%x,
+            'elif': lambda x: 'elif %s'%x,
             'else': lambda x: 'else'
         }
         self.buf.append('\n%% %s:'%TYPE_CODE[conditional.type](conditional.sentence))
