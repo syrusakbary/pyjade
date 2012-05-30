@@ -25,4 +25,6 @@ def attrs (attrs=[],terse=False):
                 t = v==True and type(v)==bool
                 if t and not terse: v=k
                 buf.append('%s'%k if terse and t else '%s="%s"'%(k,v))
-    return ' '.join(buf)
+    st = ' '.join(buf)
+    st.__html__ = st.__unicode__
+    return st
