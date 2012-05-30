@@ -25,9 +25,4 @@ def attrs (attrs=[],terse=False):
                 t = v==True and type(v)==bool
                 if t and not terse: v=k
                 buf.append('%s'%k if terse and t else '%s="%s"'%(k,v))
-    st = ' '.join(buf)
-    if hasattr(st, '__unicode__'):
-        __html__ = st.__unicode__
-    else:
-        __html__ = unicode(st)
-    return type("st", (unicode, ), {"__html__" : __html__})(st)
+    return ' '.join(buf)
