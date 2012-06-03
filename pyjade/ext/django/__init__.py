@@ -1,16 +1,31 @@
+import logging
 import os
-from django.contrib.markup.templatetags.markup import markdown
 from pyjade import Compiler as _Compiler, Parser
 from pyjade.runtime import attrs
 from pyjade.exceptions import CurrentlyNotSupported
 
+logger = logging.getLogger(__name__)
+
+from django.contrib.markup.templatetags.markup import markdown
+try:
+    import coffeescript
+    coffeescript_available = True
+except ImportError:
+    coffeescript_available = False
+    logger.info('coffeescript Python package not found.  You will not be '
+                'able to use the :coffeescript filter.  To install '
+                'coffeescript, run:\n\npip install coffeescript\n')
+
+   
 class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
 
     def __init__(self, node, **options):
         super(Compiler, self).__init__(node, **options)
         self.filters['markdown'] = lambda x, y: markdown(x)
-
+        if coffeescript_available:
+            self.filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
+            
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
         if block.mode=='append': self.buffer('{{block.super}}')
