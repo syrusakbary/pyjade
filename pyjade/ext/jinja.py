@@ -3,6 +3,8 @@ import os
 from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
 from jinja2.debug import fake_exc_info
+from pyjade.utils import process
+
 ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
     def visitCodeBlock(self,block):
@@ -81,10 +83,11 @@ class PyJadeExtension(Extension):
         if name and not os.path.splitext(name)[1] in self.environment.jade_file_extensions:
             return source
 
-        parser = Parser(source,filename=name)
-        block = parser.parse()
-        compiler = Compiler(block)
-        return compiler.compile()
+        return process(source,filename=name,compiler=Compiler)
+        # parser = Parser(source,filename=name)
+        # block = parser.parse()
+        # compiler = Compiler(block)
+        # return compiler.compile()
         # procesed= process(source,name)
         # print procesed
         # return procesed

@@ -1,6 +1,5 @@
 import re
 from collections import deque
-from utils import odict
 
 class Token:
     def __init__(self, **kwds):
@@ -266,6 +265,7 @@ class Lexer(object):
                 return self.RE_ATTR_INTERPOLATE.sub(lambda matchobj:'%s+%s.__str__()+%s'%(ns.quote,matchobj.group(1),ns.quote),attr)
 
             self.consume(index+1)
+            from utils import odict
             tok.attrs = odict()
             tok.static_attrs = set()
             def parse(c):

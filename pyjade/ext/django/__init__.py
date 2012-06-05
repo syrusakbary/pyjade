@@ -3,13 +3,19 @@ from django.contrib.markup.templatetags.markup import markdown
 from pyjade import Compiler as _Compiler, Parser
 from pyjade.runtime import attrs
 from pyjade.exceptions import CurrentlyNotSupported
+from django.conf import settings
+from pyjade.utils import process
 
 class Compiler(_Compiler):
-    autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
+    autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
 
     def __init__(self, node, **options):
+        if settings.configured:
+            options.update(getattr(settings,'PYJADE',{}))
+        filters = options.get('filters',{})
+        if 'markdown' not in filters:
+            filters['markdown'] = lambda x, y: markdown(x)
         super(Compiler, self).__init__(node, **options)
-        self.filters['markdown'] = lambda x, y: markdown(x)
 
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
@@ -46,3 +52,15 @@ from django import template
 template.add_to_builtins('pyjade.ext.django.templatetags')
 
 from loader import Loader
+
+from django.utils.translation import trans_real
+
+
+def decorate_templatize(func):
+    def templatize(src, origin=None):
+        html = process(src,compiler=Compiler)
+        return func(html, origin)
+
+    return templatize
+
+trans_real.templatize = decorate_templatize(trans_real.templatize)

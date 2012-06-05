@@ -213,10 +213,11 @@ class odict(dict):
     __copy__ = copy
     __iter__ = iterkeys
 
-def process(src,filename=None):
-    from parser import Parser
-    from compiler import Compiler
-    parser = Parser(src,filename=filename)
-    block = parser.parse()
-    compiler = Compiler(block)
-    return compiler.compile()
+from parser import Parser
+from compiler import Compiler
+
+def process(src,filename=None,parser=Parser,compiler=Compiler):
+    _parser = parser(src,filename=filename)
+    block = _parser.parse()
+    _compiler = compiler(block)
+    return _compiler.compile().strip()

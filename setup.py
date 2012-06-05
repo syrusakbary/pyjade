@@ -11,4 +11,7 @@ setup(name='pyjade',
       keywords = 'jade template converter',
       url = 'http://github.com/syrusakbary/pyjade',
       license = 'MIT',
+      entry_points = {
+          'console_scripts' : ['pyjade = pyjade.convert:convert_file',]
+      }
     )

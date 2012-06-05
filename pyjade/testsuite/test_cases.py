@@ -9,6 +9,7 @@ from pyjade.exceptions import CurrentlyNotSupported
 processors =  {}
 jinja_env = None
 from nose import with_setup
+from pyjade.utils import process
 # from pyjade import Parser, Compiler
 # import unittest
 # class PyjadeTestCase(unittest.TestCase):
@@ -60,13 +61,10 @@ try:
     )
     import django.template
     import django.template.loader
-    import pyjade.ext.django
+    from pyjade.ext.django import Compiler as DjangoCompiler
 
     def django_process(str):
-        parser = pyjade.Parser(str,filename=None)
-        block = parser.parse()
-        compiler = pyjade.ext.django.Compiler(block)
-        compiled = compiler.compile()
+        compiled = process(str,filename=None,compiler = DjangoCompiler)
         print compiled
         t = django.template.Template(compiled)
 

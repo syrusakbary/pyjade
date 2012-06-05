@@ -1,6 +1,7 @@
 import os
 from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
+from pyjade.utils import process
 ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
     def compile_top(self):
@@ -75,11 +76,12 @@ class Compiler(_Compiler):
 def preprocessor(source):
     # if name and not os.path.splitext(name)[1] in self.environment.jade_file_extensions:
     #     return source
-    name = None
-    parser = Parser(source,filename=name)
-    block = parser.parse()
-    compiler = Compiler(block)
-    return compiler.compile().strip()	
+    return process(source,compiler=Compiler)
+    # name = None
+    # parser = Parser(source,filename=name)
+    # block = parser.parse()
+    # compiler = Compiler(block)
+    # return compiler.compile().strip()	
     # procesed= process(source,name)
     # print procesed
     # return procesed
