@@ -151,7 +151,7 @@ TESTING
 You must have `nose` package installed.
 You can do the tests with::
     
-    $> ./test.sh
+    ./test.sh
 
 
 TODOs and BUGS
