@@ -1,31 +1,40 @@
 import logging
 import os
+
 from pyjade import Compiler as _Compiler, Parser
 from pyjade.runtime import attrs
 from pyjade.exceptions import CurrentlyNotSupported
+from pyjade.utils import process
+
+from django.conf import settings
+from django.contrib.markup.templatetags.markup import markdown
 
 logger = logging.getLogger(__name__)
 
-from django.contrib.markup.templatetags.markup import markdown
 try:
     import coffeescript
-    coffeescript_available = True
+    COFFEESCRIPT_AVIABLE = True
 except ImportError:
-    coffeescript_available = False
+    COFFEESCRIPT_AVIABLE = False
     logger.info('coffeescript Python package not found.  You will not be '
                 'able to use the :coffeescript filter.  To install '
                 'coffeescript, run:\n\npip install coffeescript\n')
 
-   
 class Compiler(_Compiler):
-    autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
+    autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
 
     def __init__(self, node, **options):
+        if settings.configured:
+            options.update(getattr(settings,'PYJADE',{}))
+        filters = options.get('filters',{})
+
+        if 'markdown' not in filters:
+            filters['markdown'] = lambda x, y: markdown(x)
+        if COFFEESCRIPT_AVIABLE and 'coffeescript' not in filters:
+            filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
+
         super(Compiler, self).__init__(node, **options)
-        self.filters['markdown'] = lambda x, y: markdown(x)
-        if coffeescript_available:
-            self.filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
-            
+
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
         if block.mode=='append': self.buffer('{{block.super}}')
@@ -61,3 +70,15 @@ from django import template
 template.add_to_builtins('pyjade.ext.django.templatetags')
 
 from loader import Loader
+
+from django.utils.translation import trans_real
+
+
+def decorate_templatize(func):
+    def templatize(src, origin=None):
+        html = process(src,compiler=Compiler)
+        return func(html, origin)
+
+    return templatize
+
+trans_real.templatize = decorate_templatize(trans_real.templatize)
