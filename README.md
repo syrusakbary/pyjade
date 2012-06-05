@@ -10,6 +10,15 @@ This package is **completely rewritten in the 1.X version** for be an exact port
 
 ********************************************************************
 
+UTILITIES
+=========
+To simply output the conversion to your console:
+
+```bash
+pyjade [-c django|jinja|mako] input.jade [output.html]
+```
+
+
 INSTALLATION
 ============
 
