@@ -126,7 +126,10 @@ def run_case(case,process):
     except CurrentlyNotSupported:
         pass
 
-
+exclusions = {
+    'Mako': set(['layout']),
+    'Jinja2': set(['layout']),
+    'Django': set(['layout'])}
 
 @with_setup(setup_func, teardown_func)
 def test_case_generator():
@@ -139,6 +142,5 @@ def test_case_generator():
         filenames = map(lambda x:x.replace('.jade',''),filenames)
         for processor in processors.keys():
             for filename in filenames:
-                if filename == 'layout': continue #hack
-                yield run_case, filename,processor
-
+                if not filename in exclusions[processor]:
+                    yield run_case, filename,processor
