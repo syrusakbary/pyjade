@@ -4,6 +4,7 @@
 # sys.path.append(path)
 
 import pyjade
+import pyjade.ext.html
 from pyjade.exceptions import CurrentlyNotSupported
 # from pyjade.ext.jinja import PyJadeExtension
 processors =  {}
@@ -106,6 +107,7 @@ def setup_func():
     global jinja_env, processors
 
 
+processors['Html'] = pyjade.ext.html.process_jade
 
 
 def run_case(case,process):
@@ -127,6 +129,7 @@ def run_case(case,process):
         pass
 
 exclusions = {
+    'Html': set(['mixins', 'layout', 'unicode']),
     'Mako': set(['layout']),
     'Jinja2': set(['layout']),
     'Django': set(['layout'])}
