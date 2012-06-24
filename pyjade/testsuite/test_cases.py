@@ -4,6 +4,7 @@
 # sys.path.append(path)
 
 import pyjade
+import pyjade.ext.html
 from pyjade.exceptions import CurrentlyNotSupported
 # from pyjade.ext.jinja import PyJadeExtension
 processors =  {}
@@ -106,6 +107,7 @@ def setup_func():
     global jinja_env, processors
 
 
+processors['Html'] = pyjade.ext.html.process_jade
 
 
 def run_case(case,process):
@@ -126,7 +128,11 @@ def run_case(case,process):
     except CurrentlyNotSupported:
         pass
 
-
+exclusions = {
+    'Html': set(['mixins', 'layout', 'unicode']),
+    'Mako': set(['layout']),
+    'Jinja2': set(['layout']),
+    'Django': set(['layout'])}
 
 @with_setup(setup_func, teardown_func)
 def test_case_generator():
@@ -139,6 +145,5 @@ def test_case_generator():
         filenames = map(lambda x:x.replace('.jade',''),filenames)
         for processor in processors.keys():
             for filename in filenames:
-                if filename == 'layout': continue #hack
-                yield run_case, filename,processor
-
+                if not filename in exclusions[processor]:
+                    yield run_case, filename,processor

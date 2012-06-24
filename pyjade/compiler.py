@@ -163,7 +163,9 @@ class Compiler(object):
             if self.pp and not name in self.inlineTags and not tag.textOnly:
                 self.buffer('\n')
 
-            self.buffer('%s</%s>'%(('  '*(self.indents-1) if not name in self.inlineTags else ''),name))
+            if self.pp and (not name in self.inlineTags):
+                self.buffer('  '*(self.indents-1))
+            self.buffer('</%s>'%name)
         self.indents -= 1
 
     def visitFilter(self,filter):
