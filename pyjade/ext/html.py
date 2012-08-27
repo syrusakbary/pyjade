@@ -39,7 +39,10 @@ class HTMLCompiler(pyjade.compiler.Compiler):
     def _do_eval(self, value):
         if isinstance(value, basestring):
             value = value.encode('utf-8')
-        value = eval(value, self.global_context, self.local_context)
+        try:
+            value = eval(value, self.global_context, self.local_context)
+        except:
+            return ''
         return value
 
     def _get_value(self, attr):

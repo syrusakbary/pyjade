@@ -214,7 +214,7 @@ class odict(dict):
     __iter__ = iterkeys
 
 from parser import Parser
-from compiler import Compiler
+from ext.html import HTMLCompiler as Compiler
 
 def process(src,filename=None,parser=Parser,compiler=Compiler):
     _parser = parser(src,filename=filename)

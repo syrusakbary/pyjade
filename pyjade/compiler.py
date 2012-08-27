@@ -77,7 +77,7 @@ class Compiler(object):
         self.buf = [self.compile_top()]
         self.lastBufferedIdx = -1
         self.visit(self.node)
-        return ''.join(self.buf)
+        return unicode(u''.join(self.buf))
 
     def setDoctype(self,name):
         self.doctype = self.doctypes.get(name or 'default','<!DOCTYPE %s>'%name)
