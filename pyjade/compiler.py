@@ -93,7 +93,7 @@ class Compiler(object):
             self.lastBuffered = str;
             self.lastBufferedIdx = len(self.buf)
 
-    def visit(self,node):
+    def visit(self,node,*args,**kwargs):
         # debug = self.debug
         # if debug:
         #     self.buf.append('__jade.unshift({ lineno: %d, filename: %s });' % (node.line,('"%s"'%node.filename) if node.filename else '__jade[0].filename'));
@@ -102,13 +102,13 @@ class Compiler(object):
         #     self.buf.pop()
         #     self.buf.pop()
 
-        self.visitNode(node)
+        self.visitNode(node,*args,**kwargs)
         # if debug: self.buf.append('__jade.shift();')
 
-    def visitNode (self,node):
+    def visitNode (self,node,*args,**kwargs):
         name = node.__class__.__name__
         # print name, node
-        return getattr(self,'visit%s'%name)(node)
+        return getattr(self,'visit%s'%name)(node,*args,**kwargs)
 
     def visitLiteral(self,node):
         self.buffer(node.str)

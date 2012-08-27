@@ -27,13 +27,12 @@ class Compiler(_Compiler):
         if settings.configured:
             options.update(getattr(settings,'PYJADE',{}))
         filters = options.get('filters',{})
-
         if 'markdown' not in filters:
             filters['markdown'] = lambda x, y: markdown(x)
         if COFFEESCRIPT_AVIABLE and 'coffeescript' not in filters:
             filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
         
-        self.filters = filters
+        self.filters.update(filters)
         super(Compiler, self).__init__(node, **options)
 
     def visitCodeBlock(self,block):

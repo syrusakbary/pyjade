@@ -33,6 +33,7 @@ class Compiler(_Compiler):
     def visitInclude(self,node):
         self.buffer('<%%include file="%s"/>'%(node.path))
 
+
     def visitConditional(self,conditional):
         TYPE_CODE = {
             'if': lambda x: 'if %s'%x,
@@ -40,12 +41,13 @@ class Compiler(_Compiler):
             'elif': lambda x: 'elif %s'%x,
             'else': lambda x: 'else'
         }
-        self.buf.append('\n%% %s:\n'%TYPE_CODE[conditional.type](conditional.sentence))
+        self.buf.append('\\\n%% %s:\n'%TYPE_CODE[conditional.type](conditional.sentence))
         if conditional.block:
             self.visit(conditional.block)
             for next in conditional.next:
               self.visitConditional(next)
-        if conditional.type in ['if','unless']: self.buf.append('\n% endif')
+        if conditional.type in ['if','unless']: self.buf.append('\\\n% endif\n')
+
 
     def visitCode(self,code):
         if code.buffer:
@@ -65,23 +67,13 @@ class Compiler(_Compiler):
               self.buf.append('</%%%s>'%codeTag)
  
     def visitEach(self,each):
-        self.buf.append('\n%% for %s in %s:'%(','.join(each.keys),each.obj))
+        self.buf.append('\\\n%% for %s in %s:\n'%(','.join(each.keys),each.obj))
         self.visit(each.block)
-        self.buf.append('\n% endfor')
+        self.buf.append('\\\n% endfor\n')
     def attributes(self,attrs):
         return "${%s(%s)}"%(ATTRS_FUNC,attrs)
 
 
 
 def preprocessor(source):
-    # if name and not os.path.splitext(name)[1] in self.environment.jade_file_extensions:
-    #     return source
     return process(source,compiler=Compiler)
-    # name = None
-    # parser = Parser(source,filename=name)
-    # block = parser.parse()
-    # compiler = Compiler(block)
-    # return compiler.compile().strip()	
-    # procesed= process(source,name)
-    # print procesed
-    # return procesed
