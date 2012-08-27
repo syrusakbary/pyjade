@@ -40,7 +40,7 @@ class Compiler(_Compiler):
             'elif': lambda x: 'elif %s'%x,
             'else': lambda x: 'else'
         }
-        self.buf.append('\n%% %s:'%TYPE_CODE[conditional.type](conditional.sentence))
+        self.buf.append('\n%% %s:\n'%TYPE_CODE[conditional.type](conditional.sentence))
         if conditional.block:
             self.visit(conditional.block)
             for next in conditional.next:

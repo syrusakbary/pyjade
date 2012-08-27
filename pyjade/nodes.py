@@ -77,6 +77,7 @@ class Include(Node):
 
 class Conditional(Node):
 	may_contain_tags = {'if': ['elif', 'else'],
+						'for': ['else'],
 						'elif': ['elif','else'],
 						'unless': ['elif', 'else']}
 	def __init__(self,type, sentence, block=None):
