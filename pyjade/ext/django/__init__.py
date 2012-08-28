@@ -57,10 +57,10 @@ class Compiler(_Compiler):
             self.visit(code.block)
             # if not code.buffer: self.buf.append('}')
 
-        if not code.buffer:
-          codeTag = code.val.strip().split(' ',1)[0]
-          if codeTag in self.autocloseCode:
-              self.buf.append('{%% end%s %%}'%codeTag)
+            if not code.buffer:
+              codeTag = code.val.strip().split(' ',1)[0]
+              if codeTag in self.autocloseCode:
+                  self.buf.append('{%% end%s %%}'%codeTag)
 
     def attributes(self,attrs):
         return "{%% __pyjade_attrs %s %%}"%attrs
