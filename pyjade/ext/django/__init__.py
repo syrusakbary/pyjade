@@ -9,17 +9,6 @@ from pyjade.utils import process
 from django.conf import settings
 from django.contrib.markup.templatetags.markup import markdown
 
-logger = logging.getLogger(__name__)
-
-try:
-    import coffeescript
-    COFFEESCRIPT_AVIABLE = True
-except ImportError:
-    COFFEESCRIPT_AVIABLE = False
-    logger.info('coffeescript Python package not found.  You will not be '
-                'able to use the :coffeescript filter.  To install '
-                'coffeescript, run:\n\npip install coffeescript\n')
-
 class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
 
@@ -28,10 +17,7 @@ class Compiler(_Compiler):
             options.update(getattr(settings,'PYJADE',{}))
         filters = options.get('filters',{})
         if 'markdown' not in filters:
-            filters['markdown'] = lambda x, y: markdown(x)
-        if COFFEESCRIPT_AVIABLE and 'coffeescript' not in filters:
-            filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
-        
+            filters['markdown'] = lambda x, y: markdown(x)        
         self.filters.update(filters)
         super(Compiler, self).__init__(node, **options)
 
@@ -41,10 +27,13 @@ class Compiler(_Compiler):
         self.visitBlock(block)
         if block.mode=='prepend': self.buffer('{{block.super}}')
         self.buffer('{% endblock %}')
+
     def visitAssignment(self,assignment):
         self.buffer('{%% __pyjade_set %s = %s %%}'%(assignment.name,assignment.val))
+
     def visitMixin(self,mixin):
         raise CurrentlyNotSupported('mixin')
+
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
@@ -53,9 +42,7 @@ class Compiler(_Compiler):
             self.buf.append('{%% %s %%}'%code.val)
 
         if code.block:
-            # if not code.buffer: self.buf.append('{')
             self.visit(code.block)
-            # if not code.buffer: self.buf.append('}')
 
             if not code.buffer:
               codeTag = code.val.strip().split(' ',1)[0]
@@ -69,10 +56,7 @@ class Compiler(_Compiler):
 from django import template
 template.add_to_builtins('pyjade.ext.django.templatetags')
 
-from loader import Loader
-
 from django.utils.translation import trans_real
-
 
 def decorate_templatize(func):
     def templatize(src, origin=None):
@@ -82,3 +66,5 @@ def decorate_templatize(func):
     return templatize
 
 trans_real.templatize = decorate_templatize(trans_real.templatize)
+
+from loader import Loader

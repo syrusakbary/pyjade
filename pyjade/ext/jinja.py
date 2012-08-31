@@ -7,12 +7,14 @@ from pyjade.utils import process
 
 ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
+
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
         if block.mode=='append': self.buffer('{{super()}}')
         self.visitBlock(block)
         if block.mode=='prepend': self.buffer('{{super()}}')
         self.buffer('{% endblock %}')
+
     def visitMixin(self,mixin):
         if mixin.block: 
           self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args)) 
@@ -51,6 +53,7 @@ class Compiler(_Compiler):
         self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
         self.visit(each.block)
         self.buf.append('{% endfor %}')
+
     def attributes(self,attrs):
         return "{{%s(%s)}}"%(ATTRS_FUNC,attrs)
 
@@ -82,12 +85,4 @@ class PyJadeExtension(Extension):
     def preprocess(self, source, name, filename=None):
         if name and not os.path.splitext(name)[1] in self.environment.jade_file_extensions:
             return source
-
         return process(source,filename=name,compiler=Compiler)
-        # parser = Parser(source,filename=name)
-        # block = parser.parse()
-        # compiler = Compiler(block)
-        # return compiler.compile()
-        # procesed= process(source,name)
-        # print procesed
-        # return procesed

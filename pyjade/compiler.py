@@ -190,6 +190,7 @@ class Compiler(object):
 
     def interpolate(self,text):
         return self._interpolate(text,lambda x:'{{%s}}'%x)
+ 
     def visitText(self,text):
         text = ''.join(text.nodes)
         text = self.interpolate(text)
@@ -289,3 +290,9 @@ class Compiler(object):
                 temp_attrs.append(attr)
         
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
+
+try:
+    import coffeescript
+    Compiler.filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
+except ImportError:
+    pass
