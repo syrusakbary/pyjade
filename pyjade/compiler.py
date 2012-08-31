@@ -296,3 +296,9 @@ try:
     Compiler.filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
 except ImportError:
     pass
+
+try:
+    import markdown
+    Compiler.filters['markdown'] = lambda x,y: markdown.markdown(x, output_format='html5')
+except ImportError:
+    pass
