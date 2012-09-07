@@ -13,6 +13,11 @@ def convert_file():
     except:
         pass
     try:
+        from pyjade.ext.underscore import Compiler as UnderscoreCompiler
+        aviable_compilers['underscore'] = UnderscoreCompiler
+    except:
+        pass
+    try:
         from pyjade.ext.mako import Compiler as MakoCompiler
         aviable_compilers['mako'] = MakoCompiler
     except:
@@ -23,10 +28,10 @@ def convert_file():
     parser.add_option("-o", "--output", dest="output",
                       help="write output to FILE", metavar="FILE")
     parser.add_option("-c", "--compiler", dest="compiler",
-                        choices=['django', 'jinja', 'mako',],
+                        choices=['django', 'jinja', 'mako', 'underscore',],
                         default='django',
                         type="choice",
-                      help="COMPILER must be django (default), jinja or mako ")
+                      help="COMPILER must be django (default), jinja, underscore or mako ")
     # parser.add_option("-q", "--quiet",
     #                   action="store_false", dest="verbose", default=True,
     #                   help="don't print status messages to stdout")
