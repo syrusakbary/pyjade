@@ -278,6 +278,7 @@ class Compiler(object):
         param_string = ', '.join(['%s=%s'%(n,v) for n,v in params.iteritems()])
         if buf or terse:
             self.buf.append(self.attributes(param_string))
+
     def visitAttributes(self,attrs):
         temp_attrs = []
         for attr in attrs:

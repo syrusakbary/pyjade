@@ -22,6 +22,11 @@ def convert_file():
         aviable_compilers['mako'] = MakoCompiler
     except:
         pass
+    try:
+        from pyjade.ext.tornado import Compiler as TornadoCompiler
+        aviable_compilers['tornado'] = TornadoCompiler
+    except:
+        pass
     from optparse import OptionParser
     usage = "usage: %prog [options] file [output]"
     parser = OptionParser(usage)

@@ -1,4 +1,5 @@
 from utils import odict
+
 def flatten(l, ltypes=(list, tuple)):
     ltype = type(l)
     l = list(l)
@@ -13,6 +14,22 @@ def flatten(l, ltypes=(list, tuple)):
                 l[i:i + 1] = l[i]
         i += 1
     return ltype(l)
+
+def escape(s):
+    """Convert the characters &, <, >, ' and " in string s to HTML-safe
+    sequences.  Use this if you need to display text that might contain
+    such characters in HTML.  Marks return value as markup string.
+    """
+    if hasattr(s, '__html__'):
+        return s.__html__()
+
+    return (unicode(str(s), 'utf8')
+        .replace('&', '&amp;')
+        .replace('>', '&gt;')
+        .replace('<', '&lt;')
+        .replace("'", '&#39;')
+        .replace('"', '&#34;')
+    )
 
 def attrs (attrs=[],terse=False):
     buf = []

@@ -14,7 +14,7 @@ UTILITIES
 =========
 To simply output the conversion to your console::
 
-    pyjade [-c django|jinja|mako] input.jade [output.html]
+    pyjade [-c django|jinja|mako|tornado] input.jade [output.html]
 
 
 INSTALLATION
@@ -79,6 +79,18 @@ Pyramid
 Adjust your "your_project/__init__.py" and add the following line somewhere to in the main() function::
 
     config.include('pyjade.ext.pyramid')
+
+
+Tornado Templates
+-----------------
+
+Append this after importing tornado.template::
+
+    from tornado import template
+    from pyjade.ext.tornado import patch_tornado
+    patch_tornado()
+
+    (...)
 
 
 Syntax

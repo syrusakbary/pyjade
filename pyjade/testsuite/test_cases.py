@@ -49,6 +49,19 @@ try:
 except:
     pass
 
+import tornado.template
+from pyjade.ext.tornado import patch_tornado
+patch_tornado()
+
+loader = tornado.template.Loader('cases/')
+def tornado_process (str):
+    global loader, tornado
+    template = tornado.template.Template(str,name='_.jade',loader=loader)
+    return template.generate().decode("utf-8")
+
+processors['Tornado'] = tornado_process
+
+
 try:
     from django.conf import settings
     settings.configure(
@@ -125,12 +138,14 @@ def run_case(case,process):
         print 'PROCESSED\n',processed_jade,len(processed_jade)
         print 'EXPECTED\n',html_src,len(html_src)
         assert processed_jade==html_src
+
     except CurrentlyNotSupported:
         pass
 
 exclusions = {
     'Html': set(['mixins', 'layout', 'unicode']),
     'Mako': set(['layout']),
+    'Tornado': set(['layout']),
     'Jinja2': set(['layout']),
     'Django': set(['layout'])}
 
