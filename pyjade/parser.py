@@ -59,7 +59,8 @@ class Parser(object):
         t = self.peek().type
         if t == type: return self.advance()
         else:
-            raise Exception('expected "%s" but got "%s"'%(type,t))
+            raise Exception('expected "%s" but got "%s" in file %s on line %d' %
+                            (type, t, self.filename, self.line()))
 
     def accept(self,type):
         if self.peek().type == type: return self.advance()
@@ -79,8 +80,11 @@ class Parser(object):
             return self.parseExpr()
 
         funcName = 'parse%s'%t.capitalize()
-        if hasattr(self,funcName): return getattr(self,funcName)()
-        else: raise Exception('unexpected token "%s"'%t)
+        if hasattr(self,funcName):
+            return getattr(self,funcName)()
+        else:
+            raise Exception('unexpected token "%s" in file %s on line %d' %
+                            (t, self.filename, self.line()))
 
     def parseText(self):
         tok = self.expect('text')
