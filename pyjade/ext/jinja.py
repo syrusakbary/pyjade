@@ -80,6 +80,7 @@ class PyJadeExtension(Extension):
             # jade_env=JinjaEnvironment(),
         )
         # environment.exception_handler = self.exception_handler
+        # get_corresponding_lineno
         environment.globals[ATTRS_FUNC] = attrs
 
     def preprocess(self, source, name, filename=None):
