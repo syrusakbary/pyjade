@@ -59,7 +59,8 @@ class Parser(object):
         t = self.peek().type
         if t == type: return self.advance()
         else:
-            raise Exception('expected "%s" but got "%s"'%(type,t))
+            raise Exception('expected "%s" but got "%s" in file %s on line %d' %
+                            (type, t, self.filename, self.line()))
 
     def accept(self,type):
         if self.peek().type == type: return self.advance()
@@ -79,8 +80,11 @@ class Parser(object):
             return self.parseExpr()
 
         funcName = 'parse%s'%t.capitalize()
-        if hasattr(self,funcName): return getattr(self,funcName)()
-        else: raise Exception('unexpected token "%s"'%t)
+        if hasattr(self,funcName):
+            return getattr(self,funcName)()
+        else:
+            raise Exception('unexpected token "%s" in file %s on line %d' %
+                            (t, self.filename, self.line()))
 
     def parseText(self):
         tok = self.expect('text')
@@ -179,13 +183,24 @@ class Parser(object):
         path = self.expect('extends').val.strip('"\'')
         path = self.format_path(path)
         return nodes.Extends(path)
-    
+
+    def parseCall(self):
+        tok = self.expect('call')
+        name = tok.val
+        args = tok.args
+        if args is None:
+            args = ""
+        block = self.block() if 'indent' == self.peek().type else None
+        return nodes.Mixin(name,args,block,True)
+
     def parseMixin(self):
         tok = self.expect('mixin')
         name = tok.val
         args = tok.args
+        if args is None:
+            args = ""
         block = self.block() if 'indent' == self.peek().type else None
-        return nodes.Mixin(name,args,block)
+        return nodes.Mixin(name,args,block,block is None)
 
     def parseBlock(self):
         block = self.expect('block')

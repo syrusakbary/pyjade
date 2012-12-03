@@ -9,19 +9,34 @@ ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
 
     def visitCodeBlock(self,block):
-        self.buffer('{%% block %s %%}'%block.name)
-        if block.mode=='append': self.buffer('{{super()}}')
-        self.visitBlock(block)
-        if block.mode=='prepend': self.buffer('{{super()}}')
-        self.buffer('{% endblock %}')
+        if self.mixing > 0:
+          if self.mixing > 1:
+            caller_name = '__pyjade_caller_%d' % self.mixing
+          else:
+            caller_name = 'caller'
+          self.buffer('{%% if %s %%}{{ %s() }}{%% endif %%}' % (caller_name, caller_name))
+        else:
+          self.buffer('{%% block %s %%}'%block.name)
+          if block.mode=='append': self.buffer('{{super()}}')
+          self.visitBlock(block)
+          if block.mode=='prepend': self.buffer('{{super()}}')
+          self.buffer('{% endblock %}')
 
     def visitMixin(self,mixin):
-        if mixin.block: 
+        self.mixing += 1
+        if not mixin.call:
           self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args)) 
           self.visitBlock(mixin.block)
           self.buffer('{% endmacro %}')
+        elif mixin.block:
+          if self.mixing > 1:
+            self.buffer('{%% set __pyjade_caller_%d=caller %%}' % self.mixing)
+          self.buffer('{%% call %s(%s) %%}'%(mixin.name,mixin.args))
+          self.visitBlock(mixin.block)
+          self.buffer('{% endcall %}')
         else:
           self.buffer('{{%s(%s)}}'%(mixin.name,mixin.args))
+        self.mixing -= 1
 
     def visitAssignment(self,assignment):
         self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))

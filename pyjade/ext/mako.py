@@ -11,18 +11,28 @@ class Compiler(_Compiler):
         return self._interpolate(text,lambda x:'${%s}'%x)
 
     def visitCodeBlock(self,block):
-        self.buffer('<%%block name="%s">'%block.name)
-        if block.mode=='append': self.buffer('${parent.%s()}'%block.name)
-        self.visitBlock(block)
-        if block.mode=='prepend': self.buffer('${parent.%s()}'%block.name)
-        self.buffer('</%block>')
+        if self.mixing > 0:
+          self.buffer('${caller.body() if caller else ""}')
+        else:
+          self.buffer('<%%block name="%s">'%block.name)
+          if block.mode=='append': self.buffer('${parent.%s()}'%block.name)
+          self.visitBlock(block)
+          if block.mode=='prepend': self.buffer('${parent.%s()}'%block.name)
+          self.buffer('</%block>')
+
     def visitMixin(self,mixin):
-        if mixin.block: 
+        self.mixing += 1
+        if not mixin.call:
           self.buffer('<%%def name="%s(%s)">'%(mixin.name,mixin.args)) 
           self.visitBlock(mixin.block)
           self.buffer('</%def>')
+        elif mixin.block:
+          self.buffer('<%%call expr="%s(%s)">'%(mixin.name,mixin.args))
+          self.visitBlock(mixin.block)
+          self.buffer('</%call>')
         else:
           self.buffer('${%s(%s)}'%(mixin.name,mixin.args))
+        self.mixing -= 1
 
     def visitAssignment(self,assignment):
         self.buffer('<%% %s = %s %%>'%(assignment.name,assignment.val))
