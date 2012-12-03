@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/syrusakbary/pyjade.png)](http://travis-ci.org/syrusakbary/pyjade)
+
 PyJade
 ======
 
