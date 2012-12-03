@@ -61,10 +61,11 @@ class Assignment(Node):
 		self.val = val
 
 class Mixin(Node):
-	def __init__(self,name, args, block=None):
+	def __init__(self, name, args, block, call):
 		self.name = name
 		self.args = args
 		self.block = block
+		self.call = call
 
 class Extends(Node):
 	def __init__(self,path):
