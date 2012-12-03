@@ -25,11 +25,12 @@ class Lexer(object):
     RE_EXTENDS = re.compile(r'^extends? +([^\n]+)')
     RE_PREPEND = re.compile(r'^prepend +([^\n]+)')
     RE_APPEND = re.compile(r'^append +([^\n]+)')
-    RE_BLOCK = re.compile(r'^block +(?:(prepend|append) +)?([^\n]+)')
+    RE_BLOCK = re.compile(r'^block *(?:(prepend|append) +)?([^\n]*)')
     RE_YIELD = re.compile(r'^yield *')
     RE_INCLUDE = re.compile(r'^include +([^\n]+)')
     RE_ASSIGNMENT = re.compile(r'^(\w+) += *([^;\n]+)( *;? *)')
     RE_MIXIN = re.compile(r'^mixin +([-\w]+)(?: *\((.*)\))?')
+    RE_CALL = re.compile(r'^\+([-\w]+)(?: *\((.*)\))?')
     RE_CONDITIONAL = re.compile(r'^(?:- *)?(if|unless|else if|elif|else)\b([^\n]*)')
     # RE_WHILE = re.compile(r'^while +([^\n]+)')
     RE_EACH = re.compile(r'^(?:- *)?(?:each|for) +([\w, ]+) +in +([^\n]+)')
@@ -198,6 +199,14 @@ class Lexer(object):
         if captures:
             self.consume(len(captures[0]))
             tok = self.tok('mixin',captures[1])
+            tok.args = captures[2]
+            return tok
+
+    def call(self):
+        captures = regexec(self.RE_CALL,self.input)
+        if captures:
+            self.consume(len(captures[0]))
+            tok = self.tok('call',captures[1])
             tok.args = captures[2]
             return tok
 
@@ -401,6 +410,7 @@ class Lexer(object):
             or self.block() \
             or self.include() \
             or self.mixin() \
+            or self.call() \
             or self.conditional() \
             or self.each() \
             or self.assignment() \
