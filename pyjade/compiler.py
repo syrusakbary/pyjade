@@ -68,6 +68,7 @@ class Compiler(object):
         self.doctype = None
         self.terse = False
         self.xml = False
+        self.mixing = 0
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
 
     def compile_top(self):

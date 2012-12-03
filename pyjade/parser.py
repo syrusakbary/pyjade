@@ -179,13 +179,24 @@ class Parser(object):
         path = self.expect('extends').val.strip('"\'')
         path = self.format_path(path)
         return nodes.Extends(path)
-    
+
+    def parseCall(self):
+        tok = self.expect('call')
+        name = tok.val
+        args = tok.args
+        if args is None:
+            args = ""
+        block = self.block() if 'indent' == self.peek().type else None
+        return nodes.Mixin(name,args,block,True)
+
     def parseMixin(self):
         tok = self.expect('mixin')
         name = tok.val
         args = tok.args
+        if args is None:
+            args = ""
         block = self.block() if 'indent' == self.peek().type else None
-        return nodes.Mixin(name,args,block)
+        return nodes.Mixin(name,args,block,block is None)
 
     def parseBlock(self):
         block = self.expect('block')
