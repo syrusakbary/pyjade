@@ -219,5 +219,5 @@ from ext.html import HTMLCompiler as Compiler
 def process(src,filename=None,parser=Parser,compiler=Compiler):
     _parser = parser(src,filename=filename)
     block = _parser.parse()
-    _compiler = compiler(block)
+    _compiler = compiler(block, staticAttrs=True)
     return _compiler.compile().strip()

@@ -64,6 +64,7 @@ class Compiler(object):
         self.selfClosing.extend(options.get('selfClosing',[]))
         self.autocloseCode.extend(options.get('autocloseCode',[]))
         self.inlineTags.extend(options.get('inlineTags',[]))
+        self.staticAttrs = options.get('staticAttrs', False)
         self.indents = 0
         self.doctype = None
         self.terse = False
@@ -283,7 +284,7 @@ class Compiler(object):
     def visitAttributes(self,attrs):
         temp_attrs = []
         for attr in attrs:
-            if attr['static']:
+            if self.staticAttrs or attr['static']:
                 if temp_attrs:
                     self.visitDynamicAttributes(temp_attrs)
                     temp_attrs = []
