@@ -3,7 +3,7 @@
 PyJade
 ======
 
-PyJade is a high performance port of Jade-lang for python, that converts any .jade source to the each Template-language (Django, Jinja2 or Mako).
+PyJade is a high performance port of Jade-lang for python, that converts any .jade source to the each Template-language (Django, Jinja2, Mako or Tornado).
 
 
 NOTE
