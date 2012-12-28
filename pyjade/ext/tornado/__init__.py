@@ -1,6 +1,6 @@
 from pyjade import Compiler as _Compiler
 from pyjade.runtime import attrs, escape
-import tornado
+import tornado.template
 from pyjade.utils import process
 from pyjade.exceptions import CurrentlyNotSupported
 
