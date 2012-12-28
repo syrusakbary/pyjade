@@ -48,7 +48,7 @@ def convert_file():
     compiler = options.compiler
     if compiler in aviable_compilers:
         template = codecs.open(args[0], 'r', encoding='utf-8').read()
-        output = process(template,compiler=aviable_compilers[compiler])
+        output = process(template,compiler=aviable_compilers[compiler],staticAttrs=True)
         if file_output:
             outfile = codecs.open(file_output, 'w', encoding='utf-8')
             outfile.write(output)
