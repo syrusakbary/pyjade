@@ -38,10 +38,12 @@ class Compiler(_Compiler):
         self.buffer('<%% %s = %s %%>'%(assignment.name,assignment.val))
 
     def visitExtends(self,node):
-        self.buffer('<%%inherit file="%s"/>'%(node.path))
+        path = self.format_path(node.path)
+        self.buffer('<%%inherit file="%s"/>'%(path))
 
     def visitInclude(self,node):
-        self.buffer('<%%include file="%s"/>'%(node.path))
+        path = self.format_path(node.path)
+        self.buffer('<%%include file="%s"/>'%(path))
 
 
     def visitConditional(self,conditional):

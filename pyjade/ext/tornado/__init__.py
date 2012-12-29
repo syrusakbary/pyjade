@@ -31,12 +31,6 @@ class Compiler(_Compiler):
     def visitAssignment(self,assignment):
         self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))
 
-    def visitExtends(self,node):
-        self.buffer('{%% extends "%s" %%}'%(node.path))
-
-    def visitInclude(self,node):
-        self.buffer('{%% include "%s" %%}'%(node.path))
-
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
@@ -81,6 +75,7 @@ class Template(tornado.template.Template):
         is_jade = name.endswith(".jade")
         if is_jade:
             template_string = process(template_string,filename=name,compiler=Compiler)
+            
         super(Template, self).__init__(template_string, name, *args,**kwargs)
         if is_jade:
             self.namespace.update(

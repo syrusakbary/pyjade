@@ -1,5 +1,6 @@
 import re
-
+import os
+    
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
     doctypes = {
@@ -65,6 +66,7 @@ class Compiler(object):
         self.autocloseCode.extend(options.get('autocloseCode',[]))
         self.inlineTags.extend(options.get('inlineTags',[]))
         self.staticAttrs = options.get('staticAttrs', False)
+        self.extension = options.get('extension', None) or '.jade'
         self.indents = 0
         self.doctype = None
         self.terse = False
@@ -207,11 +209,19 @@ class Compiler(object):
     def visitAssignment(self,assignment):
         self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))
 
+
+    def format_path(self,path):
+        has_extension = os.path.basename(path).find('.')>-1
+        if not has_extension: path += self.extension
+        return path
+
     def visitExtends(self,node):
-        self.buffer('{%% extends "%s" %%}'%(node.path))
+        path = self.format_path(node.path)
+        self.buffer('{%% extends "%s" %%}'%(path))
 
     def visitInclude(self,node):
-        self.buffer('{%% include "%s" %%}'%(node.path))
+        path = self.format_path(node.path)
+        self.buffer('{%% include "%s" %%}'%(path))
 
     def visitBlockComment(self,comment):
         if not comment.buffer: return

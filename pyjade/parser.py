@@ -1,6 +1,5 @@
 from lexer import Lexer
 import nodes
-import os
 
 textOnly = ('script','style')
 
@@ -175,13 +174,8 @@ class Parser(object):
                 break
         return node
 
-    def format_path(self,path):
-        has_extension = os.path.basename(path).find('.')>-1
-        if not has_extension: path += '.jade'
-        return path
     def parseExtends(self):
         path = self.expect('extends').val.strip('"\'')
-        path = self.format_path(path)
         return nodes.Extends(path)
 
     def parseCall(self):
@@ -213,7 +207,6 @@ class Parser(object):
 
     def parseInclude(self):
         path = self.expect('include').val.strip()
-        path = self.format_path(path)
         return nodes.Include(path)
 
     def parseTextBlock(self):

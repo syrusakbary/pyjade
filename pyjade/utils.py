@@ -216,8 +216,8 @@ class odict(dict):
 from parser import Parser
 from ext.html import HTMLCompiler as Compiler
 
-def process(src,filename=None,parser=Parser,compiler=Compiler, staticAttrs=False):
+def process(src,filename=None,parser=Parser,compiler=Compiler, **kwargs):
     _parser = parser(src,filename=filename)
     block = _parser.parse()
-    _compiler = compiler(block, staticAttrs=staticAttrs)
+    _compiler = compiler(block, **kwargs)
     return _compiler.compile().strip()
