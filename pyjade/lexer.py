@@ -25,7 +25,7 @@ class Lexer(object):
     RE_EXTENDS = re.compile(r'^extends? +([^\n]+)')
     RE_PREPEND = re.compile(r'^prepend +([^\n]+)')
     RE_APPEND = re.compile(r'^append +([^\n]+)')
-    RE_BLOCK = re.compile(r'^block *(?:(prepend|append) +)?([^\n]*)')
+    RE_BLOCK = re.compile(r'^block +(?:(prepend|append) +)?([^\n]*)')
     RE_YIELD = re.compile(r'^yield *')
     RE_INCLUDE = re.compile(r'^include +([^\n]+)')
     RE_ASSIGNMENT = re.compile(r'^(\w+) += *([^;\n]+)( *;? *)')
