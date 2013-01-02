@@ -270,8 +270,12 @@ class Parser(object):
             else:
                 break
 
-        if '.'== self.peek().val:
+        v = self.peek().val
+        if '.'== v:
             dot = tag.textOnly = True
+            self.advance()
+        elif '<'== v: #For inline elements
+            tag.inline = True
             self.advance()
 
         t = self.peek().type

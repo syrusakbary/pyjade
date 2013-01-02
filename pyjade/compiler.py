@@ -150,7 +150,7 @@ class Compiler(object):
                 self.visitDoctype()
             self.hasCompiledTag = True
 
-        if self.pp and name not in self.inlineTags:
+        if self.pp and name not in self.inlineTags and not tag.inline:
             self.buffer('\n'+'  '*(self.indents-1))
 
         closed = name in self.selfClosing and not self.xml

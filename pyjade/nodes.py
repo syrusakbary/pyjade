@@ -104,12 +104,13 @@ class Literal(Node):
 		self.str = str.replace('\\','\\\\')
 
 class Tag(Node):
-	def __init__(self,name, block=None):
+	def __init__(self,name, block=None, inline=False):
 		self.name = name
 		self.textOnly = False
 		self.code = None
 		self.text = None
 		self.attrs = []
+		self.inline = inline
 		self.block = block or Block()
 
 	def setAttribute(self,name,val,static=True):
