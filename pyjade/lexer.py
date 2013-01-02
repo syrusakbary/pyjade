@@ -25,7 +25,7 @@ class Lexer(object):
     RE_EXTENDS = re.compile(r'^extends? +([^\n]+)')
     RE_PREPEND = re.compile(r'^prepend +([^\n]+)')
     RE_APPEND = re.compile(r'^append +([^\n]+)')
-    RE_BLOCK = re.compile(r'^block +(?:(prepend|append) +)?([^\n]*)')
+    RE_BLOCK = re.compile(r'''^block(( +(?:(prepend|append) +)?([^\n]*))|\n)''')
     RE_YIELD = re.compile(r'^yield *')
     RE_INCLUDE = re.compile(r'^include +([^\n]+)')
     RE_ASSIGNMENT = re.compile(r'^(\w+) += *([^;\n]+)( *;? *)')
@@ -172,8 +172,8 @@ class Lexer(object):
         captures = regexec(self.RE_BLOCK,self.input)
         if captures:
             self.consume(len(captures[0]))
-            mode = captures[1] or 'replace'
-            name = captures[2]
+            mode = captures[3] or 'replace'
+            name = captures[4] or ''
             tok = self.tok('block',name)
             tok.mode = mode
             return tok
