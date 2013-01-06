@@ -151,7 +151,7 @@ class Tag(Node):
 			elif name=='class':
 				static_classes = False
 
-			if val in ("True","False"):
+			if val in ("True","False","None"):
 				val = val=="True"
 				static = True
 			attrs.append(dict(name=name,val=val,static=static))
