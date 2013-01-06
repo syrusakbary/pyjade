@@ -113,14 +113,6 @@ Syntax
 Exactly the same as the Jade Node.js module (except of cases, which are not implemented)
 https://github.com/visionmedia/jade/blob/master/Readme.md
 
-Differences
------------
-
-In pyjade you can also *escape* the default behaviour when rendering attributes just writing *!=* instead of *=*
-
-```jade
-a(href!="{% url ... %}")
-```
 
 **NOTE: Currently Django has no mixin support**
 
