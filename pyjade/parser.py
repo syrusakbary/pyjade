@@ -260,8 +260,16 @@ class Parser(object):
             t = self.peek().type
             if t in ('id','class'):
                 tok = self.advance()
-                tag.setAttribute(tok.type,'"%s"'%tok.val,False)
+                tag.setAttribute(tok.type,'"%s"'%tok.val,True)
                 continue
+            # if t=='id':
+            #     tok = self.advance()
+            #     tag.setId(tok.val)
+            #     continue
+            # elif t=='class':
+            #     tok = self.advance()
+            #     tag.addClass(tok.val)
+            #     continue
             elif 'attrs'==t:
                 tok = self.advance()
                 for n,v in tok.attrs.iteritems():

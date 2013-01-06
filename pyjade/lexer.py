@@ -249,19 +249,19 @@ class Lexer(object):
     def attrs(self):
         if '(' == self.input[0]:
             index = self.indexOfDelimiters('(',')')
-            str = self.input[1:index]
+            string = self.input[1:index]
             tok = self.tok('attrs')
-            l = len(str)
+            l = len(string)
             colons = self.colons
             states = ['key']
             class Namespace:
                 key = u''
                 val = u''
                 quote = u''
-                literal = False
+                literal = True
                 def reset(self):
                     self.key = self.val = self.quote = u''
-                    self.literal = False
+                    self.literal = True
                 def __str__(self):
                     return dict(key=self.key,val=self.val,quote=self.quote,literal=self.literal).__str__()
             ns = Namespace()
@@ -271,15 +271,18 @@ class Lexer(object):
                 return states[-1]
 
             def interpolate(attr):
-                return self.RE_ATTR_INTERPOLATE.sub(lambda matchobj:'%s+%s.__str__()+%s'%(ns.quote,matchobj.group(1),ns.quote),attr)
+                attr, num = self.RE_ATTR_INTERPOLATE.subn(lambda matchobj:'%s+%s.__str__()+%s'%(ns.quote,matchobj.group(1),ns.quote),attr)
+                return attr, (num>0)
 
             self.consume(index+1)
             from utils import odict
             tok.attrs = odict()
             tok.static_attrs = set()
+            str_nums = map(str,range(10))
             def parse(c):
                 real = c
                 if colons and ':'==c: c = '='
+                ns.literal = ns.literal and (state() not in ('object','array','expr'))
                 if c in (',','\n'):
                     s = state()
                     if s in ('expr','array','string','object'):
@@ -289,15 +292,19 @@ class Lexer(object):
                         ns.val = ns.val.strip()
                         ns.key = ns.key.strip()
                         if not ns.key: return
-                        ns.literal = ns.literal
+                        # ns.literal = ns.quote
                         if not ns.literal:
                             if '!'==ns.key[-1]:
                                 ns.literal = True
                                 ns.key = ns.key[:-1]
                         ns.key = ns.key.strip("'\"")
+                        if not ns.val:
+                            tok.attrs[ns.key] = True
+                        else:
+                            tok.attrs[ns.key], is_interpolated = interpolate(ns.val)
+                            ns.literal = ns.literal and not is_interpolated
                         if ns.literal:
                             tok.static_attrs.add(ns.key)
-                        tok.attrs[ns.key] = True if not ns.val else interpolate(ns.val)
                         ns.reset()
                 elif '=' == c:
                     s = state()
@@ -337,10 +344,12 @@ class Lexer(object):
                 elif ''== c: pass
                 else:
                     s = state()
+                    ns.literal = ns.literal and (s in ('key','string') or c in str_nums)
+                    # print c, s, ns.literal
                     if s in ('key','key char'): ns.key += c
                     else: ns.val += c
 
-            for char in str:
+            for char in string:
                 parse(char)
 
             parse(',')

@@ -298,7 +298,13 @@ class Compiler(object):
                 if temp_attrs:
                     self.visitDynamicAttributes(temp_attrs)
                     temp_attrs = []
-                self.buf.append(' %s=%s'%(attr['name'],attr['val']))
+                n,v = attr['name'], attr['val']
+                if isinstance(v,basestring):
+                    self.buf.append(' %s=%s'%(n,v))
+                elif self.terse:
+                    self.buf.append(' %s'%(n))
+                else:
+                    self.buf.append(' %s="%s"'%(n,n))
             else:
                 temp_attrs.append(attr)
         

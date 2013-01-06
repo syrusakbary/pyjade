@@ -109,21 +109,65 @@ class Tag(Node):
 		self.textOnly = False
 		self.code = None
 		self.text = None
-		self.attrs = []
+		self._attrs = []
 		self.inline = inline
 		self.block = block or Block()
 
+	@classmethod
+	def static(self, string, only_remove=False):
+		if not isinstance(string,basestring) or not string: return string
+		if string[0] in ('"',"'"):
+			if string[0]==string[-1]: string = string[1:-1]
+			else: return string
+		if only_remove: return string
+		return '"%s"'%string
+
 	def setAttribute(self,name,val,static=True):
-		self.attrs.append(dict(name=name,val=val,static=static))
+		self._attrs.append(dict(name=name,val=val,static=static))
 		return self
 
 	def removeAttribute(self,name):
-		for attr in self.attrs:
-			if attr and attr['name'] == name: self.attrs.remove(attr)
+		for attr in self._attrs:
+			if attr and attr['name'] == name: self._attrs.remove(attr)
 
 	def getAttribute(self,name):
-		for attr in self.attrs:
+		for attr in self._attrs:
 			if attr and attr['name'] == name: return attr['val']
+
+	@property
+	def attrs(self):
+		attrs = []
+		index = 0
+		classes = []
+		static_classes = True
+		for attr in self._attrs:
+			name = attr['name']
+			val = attr['val']
+			static = attr['static'] # and isinstance(val,basestring)
+			if static:
+				val = self.static(val)
+				if name=='class':
+					classes.append(index)
+			elif name=='class':
+				static_classes = False
+
+			attrs.append(dict(name=name,val=val,static=static))
+			index += 1
+
+		if static_classes and len(classes)>1:
+			first = classes[0]
+			cls = []
+			deleted = 0
+			for index in classes:
+				i = index-deleted
+				cls.append(self.static(attrs[i]['val'],True))
+				del attrs[i]
+				deleted += 1
+			attrs.insert(first,dict(name='class',val=self.static(' '.join(cls)),static=True))
+		else:
+			for index in classes:
+				attrs[index]['static'] = static_classes
+		return attrs
 
 class Text(Node):
 	def __init__(self, line=None):

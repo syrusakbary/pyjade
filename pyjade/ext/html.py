@@ -134,25 +134,14 @@ class HTMLCompiler(pyjade.compiler.Compiler):
                     classes.append(value)
             else:
                 value = self._get_value(attr)
-                if (value is not None) and (value is not False):
+
+                if value not in (None,False):
                     params.append((attr['name'], value))
         if classes:
             classes = [unicode(c) for c in classes]
             params.append(('class', " ".join(classes)))
         if params:
             self.buf.append(" "+" ".join([process_param(k, v, self.terse) for (k,v) in params]))
-
-    def visitAttributes(self,attrs):
-        temp_attrs = []
-        for attr in attrs:
-            if attr['static']:
-                if temp_attrs:
-                    self.visitDynamicAttributes(temp_attrs)
-                    temp_attrs = []
-                self.buf.append(' %s=%s'%(attr['name'],attr['val']))
-            else:
-                temp_attrs.append(attr)
-        if temp_attrs: self.visitDynamicAttributes(temp_attrs)
 
 def process_jade(src):
     parser = pyjade.parser.Parser(src)
