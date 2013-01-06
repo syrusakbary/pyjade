@@ -294,7 +294,7 @@ class Compiler(object):
     def visitAttributes(self,attrs):
         temp_attrs = []
         for attr in attrs:
-            if self.staticAttrs or attr['static']:
+            if attr['static']:
                 if temp_attrs:
                     self.visitDynamicAttributes(temp_attrs)
                     temp_attrs = []
