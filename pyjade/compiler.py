@@ -301,10 +301,11 @@ class Compiler(object):
                 n,v = attr['name'], attr['val']
                 if isinstance(v,basestring):
                     self.buf.append(' %s=%s'%(n,v))
-                elif self.terse:
-                    self.buf.append(' %s'%(n))
-                else:
-                    self.buf.append(' %s="%s"'%(n,n))
+                elif v is True:
+                    if self.terse:
+                        self.buf.append(' %s'%(n))
+                    else:
+                        self.buf.append(' %s="%s"'%(n,n))
             else:
                 temp_attrs.append(attr)
         
