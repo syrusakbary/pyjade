@@ -23,7 +23,12 @@ def escape(s):
     if hasattr(s, '__html__'):
         return s.__html__()
 
-    return (unicode(str(s), 'utf8')
+    if isinstance(s, str):
+        s = unicode(str(s), 'utf8')
+    else:
+        s = str(s)
+    
+    return (s
         .replace('&', '&amp;')
         .replace('>', '&gt;')
         .replace('<', '&lt;')
