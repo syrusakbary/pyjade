@@ -52,7 +52,7 @@ class Compiler(object):
     filters = {
         'cdata':lambda x,y:'<![CDATA[\n%s\n]]>'%x
     }
-
+    useRuntime = True
     def __init__(self,node,**options):
         self.options = options
         self.node = node
@@ -65,7 +65,7 @@ class Compiler(object):
         self.selfClosing.extend(options.get('selfClosing',[]))
         self.autocloseCode.extend(options.get('autocloseCode',[]))
         self.inlineTags.extend(options.get('inlineTags',[]))
-        self.staticAttrs = options.get('staticAttrs', False)
+        if 'useRuntime' in options: self.useRuntime = options.get('useRuntime')
         self.extension = options.get('extension', None) or '.jade'
         self.indents = 0
         self.doctype = None
@@ -245,10 +245,13 @@ class Compiler(object):
         if conditional.type in ['if','unless']: self.buf.append('{% endif %}')
 
 
+    def visitVar(self,var,escape=False):
+        return ('{{%s%s}}'%(var,'|escape' if escape else ''))
+
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
-            self.buf.append('{{%s%s}}'%(val,'|escape' if code.escape else ''))
+            self.buf.append(self.visitVar(val, code.escape))
         else:
             self.buf.append('{%% %s %%}'%code.val)
 
@@ -294,13 +297,16 @@ class Compiler(object):
     def visitAttributes(self,attrs):
         temp_attrs = []
         for attr in attrs:
-            if attr['static']:
+            if (not self.useRuntime  and not attr['name']=='class') or attr['static']: #
                 if temp_attrs:
                     self.visitDynamicAttributes(temp_attrs)
                     temp_attrs = []
                 n,v = attr['name'], attr['val']
                 if isinstance(v,basestring):
-                    self.buf.append(' %s=%s'%(n,v))
+                    if self.useRuntime or attr['static']:
+                        self.buf.append(' %s=%s'%(n,v))
+                    else:
+                        self.buf.append(' %s="%s"'%(n,self.visitVar(v)))
                 elif v is True:
                     if self.terse:
                         self.buf.append(' %s'%(n))

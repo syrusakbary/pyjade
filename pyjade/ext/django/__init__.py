@@ -11,6 +11,7 @@ from django.contrib.markup.templatetags.markup import markdown
 
 class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
+    useRuntime = True
 
     def __init__(self, node, **options):
         if settings.configured:

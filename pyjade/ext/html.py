@@ -35,7 +35,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
     global_context = dict()
     local_context = dict()
     mixins = dict()
-
+    useRuntime = True
     def _do_eval(self, value):
         if isinstance(value, basestring):
             value = value.encode('utf-8')

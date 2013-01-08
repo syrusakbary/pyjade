@@ -137,7 +137,6 @@ class Tag(Node):
 	@property
 	def attrs(self):
 		attrs = []
-		index = 0
 		classes = []
 		static_classes = True
 		for attr in self._attrs:
@@ -146,31 +145,21 @@ class Tag(Node):
 			static = attr['static'] # and isinstance(val,basestring)
 			if static:
 				val = self.static(val)
-				if name=='class':
-					classes.append(index)
-			elif name=='class':
-				static_classes = False
-
 			if val in ("True","False","None"):
 				val = val=="True"
 				static = True
-			attrs.append(dict(name=name,val=val,static=static))
-			index += 1
-
-		if static_classes and len(classes)>1:
-			first = classes[0]
-			cls = []
-			deleted = 0
-			for index in classes:
-				i = index-deleted
-				cls.append(self.static(attrs[i]['val'],True))
-				del attrs[i]
-				deleted += 1
-			attrs.insert(first,dict(name='class',val=self.static(' '.join(cls)),static=True))
-		else:
-			for index in classes:
-				attrs[index]['static'] = static_classes
-		return attrs
+			d = dict(name=name,val=val,static=static)
+			if name=='class':
+				static_classes = static_classes and static
+				classes.append(d)
+			else:
+				attrs.append(d)
+		if classes:
+			if static_classes:
+				classes = [dict(name='class', val='"%s"'%' '.join([a['val'][1:-1] for a in classes]), static=True)]
+			else:
+				for attr in classes: attr['static'] = static_classes
+		return attrs+classes
 
 class Text(Node):
 	def __init__(self, line=None):

@@ -4,6 +4,7 @@ from pyjade.runtime import attrs
 from pyjade.utils import process
 ATTRS_FUNC = '__pyjade_attrs'
 class Compiler(_Compiler):
+    useRuntime = True
     def compile_top(self):
         return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s %%>'%ATTRS_FUNC
 
@@ -61,10 +62,13 @@ class Compiler(_Compiler):
         if conditional.type in ['if','unless']: self.buf.append('\\\n% endif\n')
 
 
+    def visitVar(self,var,escape=False):
+        return '${%s%s}'%(var,'| h' if escape else '| n')
+
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
-            self.buf.append('${%s%s}'%(val,'| h' if code.escape else '| n'))
+            self.buf.append(self.visitVar(val, code.escape))
         else:
             self.buf.append('<%% %s %%>'%code.val)
 
