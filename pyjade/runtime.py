@@ -1,5 +1,11 @@
 from utils import odict
 
+try:
+    from collections import Mapping as MappingType
+except ImportError:
+    import UserDict
+    MappingType = (UserDict.UserDict, UserDict.DictMixin, dict)
+
 def flatten(l, ltypes=(list, tuple)):
     ltype = type(l)
     l = list(l)
@@ -48,3 +54,6 @@ def attrs (attrs=[],terse=False):
                 if t and not terse: v=k
                 buf.append('%s'%k if terse and t else '%s="%s"'%(k,v))
     return ' '.join(buf)
+
+def is_mapping(value):
+    return isinstance(value, MappingType)

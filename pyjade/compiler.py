@@ -1,6 +1,6 @@
 import re
 import os
-    
+
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
     doctypes = {
@@ -48,7 +48,7 @@ class Compiler(object):
       , 'hr'
     ]
     autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress'.split(',')
-    
+
     filters = {
         'cdata':lambda x,y:'<![CDATA[\n%s\n]]>'%x
     }
@@ -264,11 +264,6 @@ class Compiler(object):
               codeTag = code.val.strip().split(' ',1)[0]
               if codeTag in self.autocloseCode:
                   self.buf.append('{%% end%s %%}'%codeTag)
-
-    def visitEach(self,each):
-        self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
-        self.visit(each.block)
-        self.buf.append('{% endfor %}')
 
     def attributes(self,attrs):
         return "{{__pyjade_attrs(%s)}}"%attrs

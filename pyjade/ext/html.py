@@ -3,6 +3,7 @@
 import contextlib
 
 import pyjade
+from pyjade.runtime import is_mapping
 
 
 def process_param(key, value, terse=False):
@@ -108,16 +109,35 @@ class HTMLCompiler(pyjade.compiler.Compiler):
             exec code.val.lstrip() in self.global_context, self.local_context
 
     def visitEach(self, each):
+        # Jade only allows javascript-style (key, value) or (item, index) iteration
+        # Should validate that keys has at most two items, or else it's getting
+        # into non-standard python-unpacking behavior.
+        if len(each.keys) > 2:
+            raise Exception('too many loop variables: %s'%','.join(each.keys))
+
         obj = self._do_eval(each.obj)
-        for item in obj:
-            local_context = dict()
-            if len(each.keys) > 1:
-                for (key, value) in zip(each.keys, item):
-                    local_context[key] = value
-            else:
+
+        # if it's a dict, we can keep both variables in the loop
+        if is_mapping(obj):
+            for item in obj:
+                local_context = dict()
+                if len(each.keys) > 1:
+                    for (key, value) in zip(each.keys, item):
+                        local_context[key] = value
+                else:
+                    local_context[each.keys[0]] = item
+                with local_context_manager(self, local_context):
+                    self.visit(each.block)
+
+        # if it's not, then only if there's a second key, assign the loop index.
+        else:
+            for idx, item in enumerate(obj):
+                local_context = dict()
                 local_context[each.keys[0]] = item
-            with local_context_manager(self, local_context):
-                self.visit(each.block)
+                if len(each.keys) > 1:
+                    local_context[each.keys[1]] = idx
+                with local_context_manager(self, local_context):
+                    self.visit(each.block)
 
     def attributes(self, attrs):
         return " ".join(['''%s="%s"''' % (k,v) for (k,v) in attrs.items()])

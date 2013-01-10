@@ -59,9 +59,26 @@ class Compiler(_Compiler):
                   self.buf.append('{%% end%s %%}'%codeTag)
  
     def visitEach(self,each):
+        # Jade only allows javascript-style (key, value) or (item, index) iteration
+        # Should validate that keys has at most two items, or else it's getting
+        # into non-standard python-unpacking behavior.
+        if len(each.keys) > 2:
+            raise Exception('too many loop variables: %s'%','.join(each.keys))
+
+        # if it's a dict, we can keep both variables in the loop
+        self.buf.append('{%% if %s is mapping %%}'%each.obj)
         self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
         self.visit(each.block)
         self.buf.append('{% endfor %}')
+
+        # if it's not, then only if there's a second key, assign the loop index.
+        self.buf.append('{% else %}')
+        self.buf.append('{%% for %s in %s %%}'%(each.keys[0],each.obj))
+        if len(each.keys) > 1:
+            self.buf.append('{%% set %s = loop.index0 %%}'%each.keys[1])
+        self.visit(each.block)
+        self.buf.append('{% endfor %}')
+        self.buf.append('{% endif %}')
 
     def attributes(self,attrs):
         return "{{%s(%s)}}"%(ATTRS_FUNC,attrs)
