@@ -1,12 +1,12 @@
 from pyjade import Compiler as _Compiler
-from pyjade.runtime import attrs, escape, is_mapping
+from pyjade.runtime import attrs, escape, iteration
 import tornado.template
 from pyjade.utils import process
 from pyjade.exceptions import CurrentlyNotSupported
 
 ATTRS_FUNC = '__pyjade_attrs'
 ESCAPE_FUNC = '__pyjade_escape'
-IS_MAPPING_FUNC = '__pyjade_is_mapping'
+ITER_FUNC = '__pyjade_iter'
 
 class Compiler(_Compiler):
     def compile_top(self):
@@ -50,26 +50,8 @@ class Compiler(_Compiler):
                   self.buf.append('{%% end%s %%}'%codeTag)
  
     def visitEach(self,each):
-        # Jade only allows javascript-style (key, value) or (item, index) iteration
-        # Should validate that keys has at most two items, or else it's getting
-        # into non-standard python-unpacking behavior.
-        if len(each.keys) > 2:
-            raise Exception('too many loop variables: %s'%','.join(each.keys))
-
-        # if it's a dict, we can keep both variables in the loop
-        self.buf.append('{%% if %s(%s) %%}'%(IS_MAPPING_FUNC,each.obj))
-        self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
+        self.buf.append('{%% for %s in %s(%s,%s) %%}'%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
-        self.buf.append('{% end %}')
-
-        # if it's not, then only if there's a second key, assign the loop index.
-        self.buf.append('{% else %}')
-        if len(each.keys) > 1:
-            self.buf.append('{%% for %s,%s in enumerate(%s) %%}'%(each.keys[1],each.keys[0],each.obj))
-        else:
-            self.buf.append('{%% for %s in %s %%}'%(each.keys[0],each.obj))
-        self.visit(each.block)
-        self.buf.append('{% end %}')
         self.buf.append('{% end %}')
 
     def visitConditional(self,conditional):
@@ -100,7 +82,7 @@ class Template(tornado.template.Template):
             self.namespace.update(
                 {ATTRS_FUNC:attrs,
                 ESCAPE_FUNC:escape,
-                IS_MAPPING_FUNC:is_mapping}
+                ITER_FUNC:iteration}
             )
 
 # Patch tornado template engine for preprocess jade templates

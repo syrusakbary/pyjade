@@ -265,6 +265,11 @@ class Compiler(object):
               if codeTag in self.autocloseCode:
                   self.buf.append('{%% end%s %%}'%codeTag)
 
+    def visitEach(self,each):
+        self.buf.append('{%% for %s in %s|__pyjade_iter:%d %%}'%(','.join(each.keys),each.obj,len(each.keys)))
+        self.visit(each.block)
+        self.buf.append('{% endfor %}')
+
     def attributes(self,attrs):
         return "{{__pyjade_attrs(%s)}}"%attrs
 

@@ -1,4 +1,5 @@
 from utils import odict
+import types
 
 try:
     from collections import Mapping as MappingType
@@ -57,3 +58,43 @@ def attrs (attrs=[],terse=False):
 
 def is_mapping(value):
     return isinstance(value, MappingType)
+
+def iteration(obj, num_keys):
+    """
+    Jade iteration supports "for 'value' [, key]?" iteration only.
+    PyJade has implicitly supported value unpacking instead, without
+    the list indexes. Trying to not break existing code, the following
+    rules are applied:
+
+      1. If the object is a mapping type, return it as-is, and assume
+         the caller has the correct set of keys defined.
+
+      2. If the object's values are iterable (and not string-like):
+         a. If the number of keys matches the cardinality of the object's
+            values, return the object as-is.
+         b. If the number of keys is one less than the cardinality of
+            values, return a list of [v(0), v(1), ... v(n), index]
+
+      3. Else the object's values are not iterable, or are string like:
+         a. if there's only one key, return the list
+         b. otherwise return a list of (value,index) tuples
+
+    """
+    if is_mapping(obj):
+        return obj
+
+    head = next(iter(obj), None)
+    if head:
+        try:
+            if not isinstance(head, types.StringTypes):
+                card = len(head)
+                if num_keys == card:
+                    return obj
+                if num_keys == card + 1:
+                    return [list(value) + [index] for index, value in enumerate(obj)]
+        except Exception:
+            # Not iterable
+            pass
+
+    # Empty list, or other unknown case
+    return obj if num_keys == 1 else [(value,index) for index, value in enumerate(obj)]

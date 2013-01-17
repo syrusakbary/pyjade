@@ -3,11 +3,11 @@ from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
 from pyjade.utils import process
 ATTRS_FUNC = '__pyjade_attrs'
-IS_MAPPING_FUNC = '__pyjade_is_mapping'
+ITER_FUNC = '__pyjade_iter'
 class Compiler(_Compiler):
     useRuntime = True
     def compile_top(self):
-        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s, is_mapping as %s %%>'%(ATTRS_FUNC,IS_MAPPING_FUNC)
+        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s, iteration as %s %%>'%(ATTRS_FUNC,ITER_FUNC)
 
     def interpolate(self,text):
         return self._interpolate(text,lambda x:'${%s}'%x)
@@ -84,28 +84,9 @@ class Compiler(_Compiler):
                   self.buf.append('</%%%s>'%codeTag)
  
     def visitEach(self,each):
-        # Jade only allows javascript-style (key, value) or (item, index) iteration
-        # Should validate that keys has at most two items, or else it's getting
-        # into non-standard python-unpacking behavior.
-        if len(each.keys) > 2:
-            raise Exception('too many loop variables: %s'%','.join(each.keys))
-
-        # if it's a dict, we can keep both variables in the loop
-        self.buf.append('\\\n%% if %s(%s):\n'%(IS_MAPPING_FUNC,each.obj))
-        self.buf.append('\\\n%% for %s in %s:\n'%(','.join(each.keys),each.obj))
+        self.buf.append('\\\n%% for %s in %s(%s,%d):\n'%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
         self.buf.append('\\\n% endfor\n')
-
-        # if it's not, then only if there's a second key, assign the loop index.
-        self.buf.append('\\\n% else:\n')
-        if len(each.keys) > 1:
-            self.buf.append('\\\n%% for %s,%s in enumerate(%s):\n'%(each.keys[1],each.keys[0],each.obj))
-        else:
-            self.buf.append('\\\n%% for %s in %s:\n'%(each.keys[0],each.obj))
-        self.visit(each.block)
-        self.buf.append('\\\n% endfor\n')
-        self.buf.append('\\\n% endif\n')
-
     def attributes(self,attrs):
         return "${%s(%s)}"%(ATTRS_FUNC,attrs)
 
