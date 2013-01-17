@@ -72,7 +72,7 @@ def iteration(obj, num_keys):
       2. If the object's values are iterable (and not string-like):
          a. If the number of keys matches the cardinality of the object's
             values, return the object as-is.
-         b. If the number of keys is one less than the cardinality of
+         b. If the number of keys is one more than the cardinality of
             values, return a list of [v(0), v(1), ... v(n), index]
 
       3. Else the object's values are not iterable, or are string like:
