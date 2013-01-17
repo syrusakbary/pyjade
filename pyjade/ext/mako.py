@@ -3,10 +3,11 @@ from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
 from pyjade.utils import process
 ATTRS_FUNC = '__pyjade_attrs'
+ITER_FUNC = '__pyjade_iter'
 class Compiler(_Compiler):
     useRuntime = True
     def compile_top(self):
-        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s %%>'%ATTRS_FUNC
+        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s, iteration as %s %%>'%(ATTRS_FUNC,ITER_FUNC)
 
     def interpolate(self,text):
         return self._interpolate(text,lambda x:'${%s}'%x)
@@ -83,7 +84,7 @@ class Compiler(_Compiler):
                   self.buf.append('</%%%s>'%codeTag)
  
     def visitEach(self,each):
-        self.buf.append('\\\n%% for %s in %s:\n'%(','.join(each.keys),each.obj))
+        self.buf.append('\\\n%% for %s in %s(%s,%d):\n'%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
         self.buf.append('\\\n% endfor\n')
     def attributes(self,attrs):

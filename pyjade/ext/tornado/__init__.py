@@ -1,11 +1,12 @@
 from pyjade import Compiler as _Compiler
-from pyjade.runtime import attrs, escape
+from pyjade.runtime import attrs, escape, iteration
 import tornado.template
 from pyjade.utils import process
 from pyjade.exceptions import CurrentlyNotSupported
 
 ATTRS_FUNC = '__pyjade_attrs'
 ESCAPE_FUNC = '__pyjade_escape'
+ITER_FUNC = '__pyjade_iter'
 
 class Compiler(_Compiler):
     def compile_top(self):
@@ -49,7 +50,7 @@ class Compiler(_Compiler):
                   self.buf.append('{%% end%s %%}'%codeTag)
  
     def visitEach(self,each):
-        self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
+        self.buf.append('{%% for %s in %s(%s,%s) %%}'%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
         self.buf.append('{% end %}')
 
@@ -80,7 +81,8 @@ class Template(tornado.template.Template):
         if is_jade:
             self.namespace.update(
                 {ATTRS_FUNC:attrs,
-                ESCAPE_FUNC:escape}
+                ESCAPE_FUNC:escape,
+                ITER_FUNC:iteration}
             )
 
 # Patch tornado template engine for preprocess jade templates
