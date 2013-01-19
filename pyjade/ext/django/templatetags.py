@@ -9,7 +9,7 @@ greater than and less than operators. Some common case examples::
 """
 import unittest
 from django import template
-
+from pyjade.runtime import iteration
 
 register = template.Library()
 
@@ -59,6 +59,8 @@ class Setter(template.Node):
     new_ctx = eval('dict(%s)'%self.code,modules,context)
     context.update(new_ctx)
     return ''
+
+register.filter('__pyjade_iter', iteration)
 
 if __name__ == '__main__':
     unittest.main()

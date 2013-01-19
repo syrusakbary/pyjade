@@ -18,7 +18,7 @@ class Compiler(_Compiler):
             options.update(getattr(settings,'PYJADE',{}))
         filters = options.get('filters',{})
         if 'markdown' not in filters:
-            filters['markdown'] = lambda x, y: markdown(x)        
+            filters['markdown'] = lambda x, y: markdown(x)
         self.filters.update(filters)
         super(Compiler, self).__init__(node, **options)
 
