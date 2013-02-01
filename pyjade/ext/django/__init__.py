@@ -7,7 +7,6 @@ from pyjade.exceptions import CurrentlyNotSupported
 from pyjade.utils import process
 
 from django.conf import settings
-from django.contrib.markup.templatetags.markup import markdown
 
 class Compiler(_Compiler):
     autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
@@ -17,8 +16,8 @@ class Compiler(_Compiler):
         if settings.configured:
             options.update(getattr(settings,'PYJADE',{}))
         filters = options.get('filters',{})
-        if 'markdown' not in filters:
-            filters['markdown'] = lambda x, y: markdown(x)
+        if 'markdown' in filters:
+            raise CurrentlyNotSupported('markdown')
         self.filters.update(filters)
         super(Compiler, self).__init__(node, **options)
 
