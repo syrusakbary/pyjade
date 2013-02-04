@@ -16,8 +16,12 @@ class Compiler(_Compiler):
         if settings.configured:
             options.update(getattr(settings,'PYJADE',{}))
         filters = options.get('filters',{})
-        if 'markdown' in filters:
-            raise CurrentlyNotSupported('markdown')
+        if 'markdown' not in filters:
+            try:
+                from django.contrib.markup.templatetags.markup import markdown
+                filters['markdown'] = lambda x, y: markdown(x)
+            except ImportError:
+                pass
         self.filters.update(filters)
         super(Compiler, self).__init__(node, **options)
 
