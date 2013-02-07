@@ -32,6 +32,7 @@ class Lexer(object):
     RE_MIXIN = re.compile(r'^mixin +([-\w]+)(?: *\((.*)\))?')
     RE_CALL = re.compile(r'^\+([-\w]+)(?: *\((.*)\))?')
     RE_CONDITIONAL = re.compile(r'^(?:- *)?(if|unless|else if|elif|else)\b([^\n]*)')
+    RE_BLANK = re.compile(r'^\n *\n')
     # RE_WHILE = re.compile(r'^while +([^\n]+)')
     RE_EACH = re.compile(r'^(?:- *)?(?:each|for) +([\w, ]+) +in +([^\n]+)')
     RE_CODE = re.compile(r'^(!?=|-)([^\n]+)')
@@ -107,6 +108,13 @@ class Lexer(object):
             return self.tok('outdent')
         else:
             return self.tok('eos')
+
+    def blank(self):
+        if self.pipeless: return
+        captures = regexec(self.RE_BLANK,self.input)
+        if captures:
+            self.consume(len(captures[0])-1)
+            return self.next()
 
     def comment(self):
         captures = regexec(self.RE_COMMENT,self.input)
@@ -409,6 +417,7 @@ class Lexer(object):
 
     def next(self):
         return self.deferred() \
+            or self.blank() \
             or self.eos() \
             or self.pipelessText() \
             or self._yield() \
