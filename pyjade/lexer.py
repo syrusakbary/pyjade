@@ -271,7 +271,7 @@ class Lexer(object):
                 return states[-1]
 
             def interpolate(attr):
-                attr, num = self.RE_ATTR_INTERPOLATE.subn(lambda matchobj:'%s+%s.__str__()+%s'%(ns.quote,matchobj.group(1),ns.quote),attr)
+                attr, num = self.RE_ATTR_INTERPOLATE.subn(lambda matchobj:'%s+%s|string+%s'%(ns.quote,matchobj.group(1),ns.quote),attr)
                 return attr, (num>0)
 
             self.consume(index+1)

@@ -81,11 +81,13 @@ class PyJadeExtension(Extension):
     #     _,_,tb = fake_exc_info((pt.exc_type,pt.exc_value, pt.frames[0].tb),'asfdasfdasdf',7)
     #     # pt.frames = [tb]
     #     raise pt.exc_type, pt.exc_value, tb
+    options = {}
+    file_extensions = '.jade'
     def __init__(self, environment):
         super(PyJadeExtension, self).__init__(environment)
 
         environment.extend(
-            jade_file_extensions=('.jade',),
+            pyjade=self,
             # jade_env=JinjaEnvironment(),
         )
         # environment.exception_handler = self.exception_handler
@@ -93,6 +95,6 @@ class PyJadeExtension(Extension):
         environment.globals[ATTRS_FUNC] = attrs
 
     def preprocess(self, source, name, filename=None):
-        if name and not os.path.splitext(name)[1] in self.environment.jade_file_extensions:
+        if name and not os.path.splitext(name)[1] in self.file_extensions:
             return source
-        return process(source,filename=name,compiler=Compiler)
+        return process(source,filename=name,compiler=Compiler,**self.options)
