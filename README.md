@@ -114,8 +114,6 @@ Exactly the same as the Jade Node.js module (except of cases, which are not impl
 https://github.com/visionmedia/jade/blob/master/Readme.md
 
 
-**NOTE: Currently Django has no mixin support**
-
 Example
 -------
 
@@ -165,6 +163,21 @@ Converts to:
   </body>
 </html>
 ```
+
+Register filters
+================
+
+If you want to register a function as a filter, you only have to 
+decorate the function with `pyjade.register_filter("filter_name")`
+    
+```python
+import pyjade
+
+@pyjade.register_filter('capitalize')
+def capitalize(text,ast):
+  return text.capitalize()
+```
+
 
 TESTING
 =======

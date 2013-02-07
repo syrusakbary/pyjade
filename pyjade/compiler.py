@@ -49,9 +49,8 @@ class Compiler(object):
     ]
     autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress'.split(',')
 
-    filters = {
-        'cdata':lambda x,y:'<![CDATA[\n%s\n]]>'%x
-    }
+    filters = {}
+
     useRuntime = True
     def __init__(self,node,**options):
         self.options = options
@@ -175,9 +174,9 @@ class Compiler(object):
     def visitFilter(self,filter):
         if filter.name not in self.filters:
           if filter.isASTFilter:
-            raise Exception('unknown ast filter "%s:"'%filter.name)
+            raise Exception('unknown ast filter "%s"'%filter.name)
           else:
-            raise Exception('unknown filter "%s:"'%filter.name)
+            raise Exception('unknown filter "%s"'%filter.name)
 
         fn = self.filters.get(filter.name)
         if filter.isASTFilter:
@@ -317,14 +316,6 @@ class Compiler(object):
         
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
 
-try:
-    import coffeescript
-    Compiler.filters['coffeescript'] = lambda x, y: '<script>%s</script>' % coffeescript.compile(x)
-except ImportError:
-    pass
-
-try:
-    import markdown
-    Compiler.filters['markdown'] = lambda x,y: markdown.markdown(x, output_format='html5')
-except ImportError:
-    pass
+    @classmethod
+    def register_filter(cls,name,f):
+        cls.filters[name] = f

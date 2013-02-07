@@ -1,6 +1,8 @@
 from itertools import izip, imap
 from copy import deepcopy
 
+from compiler import Compiler
+
 missing = object()
 
 class odict(dict):
@@ -214,9 +216,9 @@ class odict(dict):
     __iter__ = iterkeys
 
 from parser import Parser
-from ext.html import HTMLCompiler as Compiler
+from ext.html import HTMLCompiler
 
-def process(src,filename=None,parser=Parser,compiler=Compiler, **kwargs):
+def process(src,filename=None,parser=Parser,compiler=HTMLCompiler, **kwargs):
     _parser = parser(src,filename=filename)
     block = _parser.parse()
     _compiler = compiler(block, **kwargs)
