@@ -36,7 +36,21 @@ class Compiler(_Compiler):
         self.buffer('{%% __pyjade_set %s = %s %%}'%(assignment.name,assignment.val))
 
     def visitMixin(self,mixin):
-        raise CurrentlyNotSupported('mixin')
+        self.mixing += 1
+        if not mixin.call:
+          self.buffer('{%% __pyjade_kwacro %s %s %%}'%(mixin.name,mixin.args)) 
+          self.visitBlock(mixin.block)
+          self.buffer('{% end__pyjade_kwacro %}')
+        elif mixin.block:
+          pass
+          # if self.mixing > 1:
+          #   self.buffer('{%% __pyjade_set __pyjade_caller_%d=caller %%}' % self.mixing)
+          # self.buffer('{%% call %s(%s) %%}'%(mixin.name,mixin.args))
+          # self.visitBlock(mixin.block)
+          # self.buffer('{% endcall %}')
+        else:
+          self.buffer('{%% __pyjade_usekwacro %s %s %%}'%(mixin.name,mixin.args))
+        self.mixing -= 1
 
     def visitCode(self,code):
         if code.buffer:
