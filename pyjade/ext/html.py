@@ -3,6 +3,7 @@
 import contextlib
 
 import pyjade
+from pyjade.runtime import is_mapping, iteration
 
 
 def process_param(key, value, terse=False):
@@ -108,7 +109,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
             exec code.val.lstrip() in self.global_context, self.local_context
 
     def visitEach(self, each):
-        obj = self._do_eval(each.obj)
+        obj = iteration(self._do_eval(each.obj), len(each.keys))
         for item in obj:
             local_context = dict()
             if len(each.keys) > 1:

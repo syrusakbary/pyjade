@@ -1,11 +1,12 @@
 from jinja2.ext import Extension
 import os
 from pyjade import Parser, Compiler as _Compiler
-from pyjade.runtime import attrs
+from pyjade.runtime import attrs, iteration
 from jinja2.debug import fake_exc_info
 from pyjade.utils import process
 
 ATTRS_FUNC = '__pyjade_attrs'
+ITER_FUNC = '__pyjade_iter'
 class Compiler(_Compiler):
 
     def visitCodeBlock(self,block):
@@ -59,7 +60,7 @@ class Compiler(_Compiler):
                   self.buf.append('{%% end%s %%}'%codeTag)
  
     def visitEach(self,each):
-        self.buf.append('{%% for %s in %s %%}'%(','.join(each.keys),each.obj))
+        self.buf.append("{%% for %s in %s(%s,%d) %%}"%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
         self.buf.append('{% endfor %}')
 
@@ -93,6 +94,7 @@ class PyJadeExtension(Extension):
         # environment.exception_handler = self.exception_handler
         # get_corresponding_lineno
         environment.globals[ATTRS_FUNC] = attrs
+        environment.globals[ITER_FUNC] = iteration
 
     def preprocess(self, source, name, filename=None):
         if name and not os.path.splitext(name)[1] in self.file_extensions:
