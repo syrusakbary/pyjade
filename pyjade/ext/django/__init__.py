@@ -42,12 +42,7 @@ class Compiler(_Compiler):
           self.visitBlock(mixin.block)
           self.buffer('{% end__pyjade_kwacro %}')
         elif mixin.block:
-          pass
-          # if self.mixing > 1:
-          #   self.buffer('{%% __pyjade_set __pyjade_caller_%d=caller %%}' % self.mixing)
-          # self.buffer('{%% call %s(%s) %%}'%(mixin.name,mixin.args))
-          # self.visitBlock(mixin.block)
-          # self.buffer('{% endcall %}')
+          raise CurrentlyNotSupported("The mixin blocks are not supported yet.")
         else:
           self.buffer('{%% __pyjade_usekwacro %s %s %%}'%(mixin.name,mixin.args))
         self.mixing -= 1
