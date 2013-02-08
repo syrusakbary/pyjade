@@ -1,36 +1,12 @@
-# import os
-# import sys
-# path = os.path.abspath(os.path.join(os.path.dirname(__file__),"../../"))
-# sys.path.append(path)
-
 import pyjade
 import pyjade.ext.html
+from pyjade.utils import process
 from pyjade.exceptions import CurrentlyNotSupported
-# from pyjade.ext.jinja import PyJadeExtension
+
+from nose import with_setup
+
 processors =  {}
 jinja_env = None
-from nose import with_setup
-from pyjade.utils import process
-# from pyjade import Parser, Compiler
-# import unittest
-# class PyjadeTestCase(unittest.TestCase):
-
-#     ### use only these methods for testing.  If you need standard
-#     ### unittest method, wrap them!
-
-#     def setup(self):
-#         pass
-
-#     def test_files(self):
-#       print 'a'
-#     def teardown(self):
-#         pass
-
-# def suite():
-#     suite = unittest.TestSuite()
-#     suite.addTest(unittest.makeSuite(PyjadeTestCase))
-#     return suite
-
 
 def teardown_func():
     pass
@@ -46,21 +22,23 @@ try:
         return template.render()
 
     processors['Jinja2'] = jinja_process
-except:
+except ImportError:
     pass
 
-import tornado.template
-from pyjade.ext.tornado import patch_tornado
-patch_tornado()
+try:
+    import tornado.template
+    from pyjade.ext.tornado import patch_tornado
+    patch_tornado()
 
-loader = tornado.template.Loader('cases/')
-def tornado_process (str):
-    global loader, tornado
-    template = tornado.template.Template(str,name='_.jade',loader=loader)
-    return template.generate().decode("utf-8")
+    loader = tornado.template.Loader('cases/')
+    def tornado_process (str):
+        global loader, tornado
+        template = tornado.template.Template(str,name='_.jade',loader=loader)
+        return template.generate().decode("utf-8")
 
-processors['Tornado'] = tornado_process
-
+    processors['Tornado'] = tornado_process
+except ImportError:
+    pass
 
 try:
     from django.conf import settings
@@ -84,16 +62,10 @@ try:
 
         ctx = django.template.Context()
         return t.render(ctx)
-        # for d in values:
-        #     ctx.push()
-        #     ctx.update(d)
-        # t = django.template.loader.get_template(name)
-        # t = pyjade.ext.django.Loader._process(str)
-        # return t.render(ctx)
 
     processors['Django'] = django_process
-except Exception,e:
-    raise e
+except ImportError:
+    pass
 
 try:
     import pyjade.ext.mako
@@ -102,19 +74,13 @@ try:
     dirlookup = TemplateLookup(directories=['cases/'],preprocessor=pyjade.ext.mako.preprocessor)
 
     def mako_process(str):
-        
-        # parser = pyjade.Parser(str,filename=None)
-        # block = parser.parse()
-        # compiler = pyjade.ext.mako.Compiler(block)
-        # compiled = compiler.compile()
-        # print compiled
         t = mako.template.Template(str, lookup=dirlookup,preprocessor=pyjade.ext.mako.preprocessor, default_filters=['decode.utf8'])
         return t.render()
 
     processors['Mako'] = mako_process
 
-except Exception,e:
-    raise e
+except ImportError:
+    pass
 
 def setup_func():
     global jinja_env, processors
