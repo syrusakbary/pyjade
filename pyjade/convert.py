@@ -21,7 +21,7 @@ def convert_file():
                     help="Write output to FILE", metavar="FILE")
     parser.add_option("-c", "--compiler", dest="compiler",
                     choices=available_compilers.keys(),
-                    default='django',
+                    default=available_compilers.keys()[0],
                     type="choice",
                     help="COMPILER must be one of %s, default is django" % ','.join(available_compilers.keys()))
     parser.add_option("-e", "--ext", dest="extension",
