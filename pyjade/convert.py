@@ -19,11 +19,15 @@ def convert_file():
     parser = OptionParser(usage)
     parser.add_option("-o", "--output", dest="output",
                     help="Write output to FILE", metavar="FILE")
+    # use a default compiler here to sidestep making a particular
+    # compiler absolutely necessary (ex. django)
+    default_compiler = sorted(available_compilers.keys()[0])
     parser.add_option("-c", "--compiler", dest="compiler",
                     choices=available_compilers.keys(),
-                    default=available_compilers.keys()[0],
+                    default=default_compiler,
                     type="choice",
-                    help="COMPILER must be one of %s, default is django" % ','.join(available_compilers.keys()))
+                    help=("COMPILER must be one of %s, default is %s" %
+                          (','.join(available_compilers.keys()), default_compiler)))
     parser.add_option("-e", "--ext", dest="extension",
                     help="Set import/extends default file extension", metavar="FILE")
 
