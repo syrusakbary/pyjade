@@ -21,7 +21,7 @@ def convert_file():
                     help="Write output to FILE", metavar="FILE")
     # use a default compiler here to sidestep making a particular
     # compiler absolutely necessary (ex. django)
-    default_compiler = sorted(available_compilers.keys()[0])
+    default_compiler = sorted(available_compilers.keys())[0]
     parser.add_option("-c", "--compiler", dest="compiler",
                     choices=available_compilers.keys(),
                     default=default_compiler,
