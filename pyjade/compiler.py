@@ -167,9 +167,8 @@ class Compiler(object):
 
             if self.pp and not name in self.inlineTags and not textOnly:
                 self.buffer('\n')
-
-            if self.pp and (not name in self.inlineTags):
                 self.buffer('  '*(self.indents-1))
+
             self.buffer('</%s>'%name)
         self.indents -= 1
 
