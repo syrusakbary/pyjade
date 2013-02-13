@@ -161,13 +161,14 @@ class Compiler(object):
             if tag.code: self.visitCode(tag.code)
             if tag.text: self.buffer(self.interpolate(tag.text.nodes[0].lstrip()))
             self.escape = 'pre' == tag.name
+            # empirically check if we only contain text
+            textOnly = tag.textOnly or not bool(len(tag.block.nodes))
             self.visit(tag.block)
 
-            if self.pp and not name in self.inlineTags and not tag.textOnly:
+            if self.pp and not name in self.inlineTags and not textOnly:
                 self.buffer('\n')
-
-            if self.pp and (not name in self.inlineTags):
                 self.buffer('  '*(self.indents-1))
+
             self.buffer('</%s>'%name)
         self.indents -= 1
 
