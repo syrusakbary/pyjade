@@ -46,6 +46,9 @@ class Compiler(_Compiler):
         if code.buffer:
             val = code.val.lstrip()
             self.buf.append('{{%s%s}}'%(val,'|escape' if code.escape else ''))
+        elif code.val.lstrip()[:4] == 'var ':
+            val = code.val.lstrip()[4:]
+            self.buf.append('{%% set %s %%}'%val)
         else:
             self.buf.append('{%% %s %%}'%code.val)
 
