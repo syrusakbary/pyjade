@@ -320,3 +320,10 @@ class Compiler(object):
     @classmethod
     def register_filter(cls,name,f):
         cls.filters[name] = f
+
+    @classmethod
+    def register_autoclosecode(cls,name):
+        cls.autocloseCode.append(name)
+
+
+#1-
