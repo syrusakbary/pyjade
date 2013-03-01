@@ -97,6 +97,6 @@ class PyJadeExtension(Extension):
         environment.globals[ITER_FUNC] = iteration
 
     def preprocess(self, source, name, filename=None):
-        if name and not os.path.splitext(name)[1] in self.file_extensions:
+        if (not name or (name and not os.path.splitext(name)[1] in self.file_extensions)):
             return source
         return process(source,filename=name,compiler=Compiler,**self.options)

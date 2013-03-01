@@ -16,9 +16,9 @@ try:
     from jinja2 import Environment, FileSystemLoader
     from pyjade.ext.jinja import PyJadeExtension
     jinja_env = Environment(extensions=[PyJadeExtension],loader=FileSystemLoader('cases/'))
-    def jinja_process (str):
+    def jinja_process (src, filename):
         global jinja_env
-        template = jinja_env.from_string(str)
+        template = jinja_env.get_template(filename)
         return template.render()
 
     processors['Jinja2'] = jinja_process
@@ -31,9 +31,9 @@ try:
     patch_tornado()
 
     loader = tornado.template.Loader('cases/')
-    def tornado_process (str):
+    def tornado_process (src, filename):
         global loader, tornado
-        template = tornado.template.Template(str,name='_.jade',loader=loader)
+        template = tornado.template.Template(src,name='_.jade',loader=loader)
         return template.generate().decode("utf-8")
 
     processors['Tornado'] = tornado_process
@@ -55,8 +55,8 @@ try:
     import django.template.loader
     from pyjade.ext.django import Compiler as DjangoCompiler
 
-    def django_process(str):
-        compiled = process(str,filename=None,compiler = DjangoCompiler)
+    def django_process(src, filename):
+        compiled = process(src, filename=filename,compiler = DjangoCompiler)
         print compiled
         t = django.template.Template(compiled)
 
@@ -73,8 +73,8 @@ try:
     from mako.lookup import TemplateLookup
     dirlookup = TemplateLookup(directories=['cases/'],preprocessor=pyjade.ext.mako.preprocessor)
 
-    def mako_process(str):
-        t = mako.template.Template(str, lookup=dirlookup,preprocessor=pyjade.ext.mako.preprocessor, default_filters=['decode.utf8'])
+    def mako_process(src, filename):
+        t = mako.template.Template(src, lookup=dirlookup,preprocessor=pyjade.ext.mako.preprocessor, default_filters=['decode.utf8'])
         return t.render()
 
     processors['Mako'] = mako_process
@@ -85,13 +85,14 @@ except ImportError:
 def setup_func():
     global jinja_env, processors
 
+def html_process(src, filename):
+    return pyjade.ext.html.process_jade(src)
 
-processors['Html'] = pyjade.ext.html.process_jade
-
+processors['Html'] = html_process
 
 def run_case(case,process):
     global processors
-    process = processors[process]
+    processor = processors[process]
     jade_file = open('cases/%s.jade'%case)
     jade_src = jade_file.read().decode('utf-8')
     jade_file.close()
@@ -100,7 +101,7 @@ def run_case(case,process):
     html_src = html_file.read().strip('\n').decode('utf-8')
     html_file.close()
     try:
-        processed_jade = process(jade_src).strip('\n')
+        processed_jade = processor(jade_src, '%s.jade'%case).strip('\n')
         print 'PROCESSED\n',processed_jade,len(processed_jade)
         print 'EXPECTED\n',html_src,len(html_src)
         assert processed_jade==html_src
@@ -114,6 +115,7 @@ exclusions = {
     'Tornado': set(['layout']),
     'Jinja2': set(['layout']),
     'Django': set(['layout'])}
+    
 
 @with_setup(setup_func, teardown_func)
 def test_case_generator():
