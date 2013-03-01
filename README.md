@@ -6,12 +6,6 @@ PyJade
 PyJade is a high performance port of Jade-lang for python, that converts any .jade source to the each Template-language (Django, Jinja2, Mako or Tornado).
 
 
-NOTE
-----
-This package is **completely rewritten in the 1.X version** for be an exact port of Jade, so may be some *backwards incompatibilities*.
-
-********************************************************************
-
 UTILITIES
 =========
 To simply output the conversion to your console:
