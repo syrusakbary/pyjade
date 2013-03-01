@@ -2,4 +2,3 @@ django
 jinja2
 mako
 tornado
-nose
