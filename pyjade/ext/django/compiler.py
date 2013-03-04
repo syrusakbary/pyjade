@@ -62,11 +62,15 @@ from django import template
 template.add_to_builtins('pyjade.ext.django.templatetags')
 
 from django.utils.translation import trans_real
-from django.utils.encoding import force_text
+
+try:
+    from django.utils.encoding import force_text as to_text
+except ImportError:
+    from django.utils.encoding import force_unicode as to_text
 
 def decorate_templatize(func):
     def templatize(src, origin=None):
-        src = force_text(src, settings.FILE_CHARSET)
+        src = to_text(src, settings.FILE_CHARSET)
         html = process(src,compiler=Compiler)
         return func(html, origin)
 
