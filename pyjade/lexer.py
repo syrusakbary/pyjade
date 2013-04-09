@@ -1,5 +1,7 @@
+from __future__ import absolute_import
 import re
 from collections import deque
+import six
 
 class Token:
     def __init__(self, **kwds):
@@ -42,9 +44,11 @@ class Lexer(object):
     RE_INDENT_SPACES = re.compile(r'^\n( *)')
     RE_COLON = re.compile(r'^: *')
     # RE_ = re.compile(r'')
-    def __init__(self,str,**options):
+    def __init__(self,string,**options):
+        if isinstance(string, six.binary_type):
+            string = six.text_type(string, 'utf8')
         self.options = options
-        self.input = self.RE_INPUT.sub('\n',str)
+        self.input = self.RE_INPUT.sub('\n',string)
         self.colons = self.options.get('colons',False)
         self.deferredTokens = deque()
         self.lastIndents = 0
@@ -238,7 +242,7 @@ class Lexer(object):
         if captures:
             self.consume(len(captures[0]))
             tok = self.tok('each',None)
-            tok.keys = map(lambda x:x.strip(),captures[1].split(','))
+            tok.keys = [x.strip() for x in captures[1].split(',')]
             tok.code = captures[2]
             return tok
 
@@ -283,10 +287,10 @@ class Lexer(object):
                 return attr, (num>0)
 
             self.consume(index+1)
-            from utils import odict
+            from .utils import odict
             tok.attrs = odict()
             tok.static_attrs = set()
-            str_nums = map(str,range(10))
+            str_nums = list(map(str, range(10)))
             def parse(c):
                 real = c
                 if colons and ':'==c: c = '='

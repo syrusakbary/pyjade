@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pyjade
 a = pyjade.Parser('''doctype 5
 html
@@ -12,7 +13,7 @@ html
 block = a.parse()
 import pyjade.ext.jinja
 compiler = pyjade.ext.jinja.Compiler(block)
-print compiler.compile()
+print(compiler.compile())
 # OUT: <!DOCTYPE html>
 # OUT: <html{{__pyjade_attrs(terse=True)}}>
 # OUT:   <head{{__pyjade_attrs(terse=True)}}>

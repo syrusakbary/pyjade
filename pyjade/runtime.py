@@ -1,5 +1,7 @@
-from utils import odict
+from __future__ import absolute_import
+from .utils import odict
 import types
+import six
 
 try:
     from collections import Mapping as MappingType
@@ -29,9 +31,10 @@ def escape(s):
     """
     if hasattr(s, '__html__'):
         return s.__html__()
-
-    if isinstance(s, str):
-        s = unicode(str(s), 'utf8')
+    if isinstance(s, six.binary_type):
+        s = six.text_type(str(s), 'utf8')
+    elif isinstance(s, six.text_type):
+        s = s
     else:
         s = str(s)
     
@@ -86,7 +89,7 @@ def iteration(obj, num_keys):
     head = next(iter(obj), None)
     if head:
         try:
-            if not isinstance(head, types.StringTypes):
+            if not isinstance(head, six.string_types):
                 card = len(head)
                 if num_keys == card:
                     return obj

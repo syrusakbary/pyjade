@@ -1,3 +1,4 @@
+from __future__ import print_function
 import logging
 import codecs
 from optparse import OptionParser
@@ -10,7 +11,7 @@ def convert_file():
     for i in support_compilers_list:
         try:
             compiler_class = __import__('pyjade.ext.%s' % i, fromlist=['pyjade']).Compiler
-        except ImportError, e:
+        except ImportError as e:
             logging.warning(e)
         else:
             available_compilers[i] = compiler_class
@@ -23,17 +24,17 @@ def convert_file():
     # compiler absolutely necessary (ex. django)
     default_compiler = sorted(available_compilers.keys())[0]
     parser.add_option("-c", "--compiler", dest="compiler",
-                    choices=available_compilers.keys(),
+                    choices=list(available_compilers.keys()),
                     default=default_compiler,
                     type="choice",
                     help=("COMPILER must be one of %s, default is %s" %
-                          (','.join(available_compilers.keys()), default_compiler)))
+                          (','.join(list(available_compilers.keys())), default_compiler)))
     parser.add_option("-e", "--ext", dest="extension",
                     help="Set import/extends default file extension", metavar="FILE")
 
     options, args = parser.parse_args()
     if len(args) < 1:
-        print "Specify the input file as the first argument."
+        print("Specify the input file as the first argument.")
         exit()
     file_output = options.output or (args[1] if len(args) > 1 else None)
     compiler = options.compiler
@@ -52,7 +53,7 @@ def convert_file():
             outfile = codecs.open(file_output, 'w', encoding='utf-8')
             outfile.write(output)
         else:
-            print output
+            print(output)
     else:
         raise Exception('You must have %s installed!' % compiler)
 
