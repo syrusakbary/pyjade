@@ -1,5 +1,6 @@
 import re
 import os
+import six
 
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
@@ -80,7 +81,10 @@ class Compiler(object):
         self.buf = [self.compile_top()]
         self.lastBufferedIdx = -1
         self.visit(self.node)
-        return unicode(u''.join(self.buf))
+        compiled = u''.join(self.buf)
+        if isinstance(compiled, six.binary_type):
+            compiled = six.text_type(compiled, 'utf8')
+        return compiled
 
     def setDoctype(self,name):
         self.doctype = self.doctypes.get(name or 'default','<!DOCTYPE %s>'%name)
@@ -290,7 +294,7 @@ class Compiler(object):
         buf = ', '.join(buf)
         if self.terse: params['terse'] = 'True'
         if buf: params['attrs'] = '[%s]'%buf
-        param_string = ', '.join(['%s=%s'%(n,v) for n,v in params.iteritems()])
+        param_string = ', '.join(['%s=%s'%(n,v) for n,v in six.iteritems(params)])
         if buf or terse:
             self.buf.append(self.attributes(param_string))
 
@@ -302,7 +306,7 @@ class Compiler(object):
                     self.visitDynamicAttributes(temp_attrs)
                     temp_attrs = []
                 n,v = attr['name'], attr['val']
-                if isinstance(v,basestring):
+                if isinstance(v,six.string_types):
                     if self.useRuntime or attr['static']:
                         self.buf.append(' %s=%s'%(n,v))
                     else:

@@ -3,13 +3,13 @@ from itertools import count
 from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs
 from pyjade.utils import process
-
+import six
 
 def process_param(key, value, terse=False):
     if terse:
         if (key == value) or (value is True):
             return key
-    if isinstance(value, basestring):
+    if isinstance(value, six.binary_type):
         value = value.decode('utf8')
     return '''%s="%s"''' % (key, value)
 
@@ -57,7 +57,7 @@ class Compiler(_Compiler):
         self.buf.append('<% } %>')
 
     def _do_eval(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             value = value.encode('utf-8')
         try:
             value = eval(value, {}, {})
@@ -69,7 +69,7 @@ class Compiler(_Compiler):
         value = attr['val']
         if attr['static']:
             return attr['val']
-        if isinstance(value, basestring):
+        if isinstance(value, six.string_types):
             return self._do_eval(value)
         else:
             return attr['name']
@@ -89,7 +89,7 @@ class Compiler(_Compiler):
                 if (value is not None) and (value is not False):
                     params.append((attr['name'], value))
         if classes:
-            classes = [unicode(c) for c in classes]
+            classes = [six.text_type(c) for c in classes]
             params.append(('class', " ".join(classes)))
         if params:
             self.buf.append(" "+" ".join([process_param(k, v, self.terse) for (k,v) in params]))

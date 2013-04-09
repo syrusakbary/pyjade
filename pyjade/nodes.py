@@ -1,4 +1,5 @@
 from collections import deque
+import six
 
 class Node(object):
 	debug = False
@@ -115,7 +116,7 @@ class Tag(Node):
 
 	@classmethod
 	def static(self, string, only_remove=False):
-		if not isinstance(string,basestring) or not string: return string
+		if not isinstance(string,six.string_types) or not string: return string
 		if string[0] in ('"',"'"):
 			if string[0]==string[-1]: string = string[1:-1]
 			else: return string
@@ -142,7 +143,7 @@ class Tag(Node):
 		for attr in self._attrs:
 			name = attr['name']
 			val = attr['val']
-			static = attr['static'] # and isinstance(val,basestring)
+			static = attr['static'] # and isinstance(val,six.string_types)
 			if static:
 				val = self.static(val)
 			if val in ("True","False","None"):
@@ -164,7 +165,7 @@ class Tag(Node):
 class Text(Node):
 	def __init__(self, line=None):
 		self.nodes = []
-		if isinstance(line,basestring): self.append(line)
+		if isinstance(line,six.string_types): self.append(line)
 
 	def append(self,node):
 		return self.nodes.append(node)

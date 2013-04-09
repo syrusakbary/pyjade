@@ -1,4 +1,5 @@
-from compiler import Compiler
+from __future__ import absolute_import
+from .compiler import Compiler
 
 def register_filter(name=None):
     def decorator(f):

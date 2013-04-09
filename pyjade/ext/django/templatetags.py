@@ -11,6 +11,7 @@ import unittest
 from django import template
 from django.template import FilterExpression
 from django.template.loader import get_template
+import six
 
 from pyjade.runtime import iteration
 
@@ -109,7 +110,7 @@ def do_macro(parser, token):
     except IndexError:
         m = ("'%s' tag requires at least one argument (macro name)"
             % token.contents.split()[0])
-        raise template.TemplateSyntaxError, m
+        raise template.TemplateSyntaxError(m)
     # TODO: could do some validations here,
     # for now, "blow your head clean off"
     nodelist = parser.parse(('end__pyjade_kwacro', ))
@@ -136,7 +137,7 @@ def do_loadmacros(parser, token):
     except IndexError:
         m = ("'%s' tag requires at least one argument (macro name)"
             % token.contents.split()[0])
-        raise template.TemplateSyntaxError, m
+        raise template.TemplateSyntaxError(m)
     if filename[0] in ('"', "'") and filename[-1] == filename[0]:
         filename = filename[1:-1]
     t = get_template(filename)
@@ -166,7 +167,7 @@ class UseMacroNode(template.Node):
             except IndexError:
                 context[arg] = ""
  
-        for name, default in self.macro.kwargs.iteritems():
+        for name, default in six.iteritems(self.macro.kwargs):
             if name in self.fe_kwargs:
                 context[name] = self.fe_kwargs[name].resolve(context)
             else:
@@ -185,12 +186,12 @@ def do_usemacro(parser, token):
     except IndexError:
         m = ("'%s' tag requires at least one argument (macro name)"
              % token.contents.split()[0])
-        raise template.TemplateSyntaxError, m
+        raise template.TemplateSyntaxError(m)
     try:
         macro = parser._macros[macro_name]
     except (AttributeError, KeyError):
         m = "Macro '%s' is not defined" % macro_name
-        raise template.TemplateSyntaxError, m
+        raise template.TemplateSyntaxError(m)
  
     fe_kwargs = {}
     fe_args = []

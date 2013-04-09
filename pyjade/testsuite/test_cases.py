@@ -1,7 +1,9 @@
+from __future__ import print_function
 import pyjade
 import pyjade.ext.html
 from pyjade.utils import process
 from pyjade.exceptions import CurrentlyNotSupported
+import six
 
 from nose import with_setup
 
@@ -34,7 +36,10 @@ try:
     def tornado_process (src, filename):
         global loader, tornado
         template = tornado.template.Template(src,name='_.jade',loader=loader)
-        return template.generate().decode("utf-8")
+        generated = template.generate()
+        if isinstance(generated, six.binary_type):
+            generated = generated.decode("utf-8")
+        return generated
 
     processors['Tornado'] = tornado_process
 except ImportError:
@@ -57,7 +62,7 @@ try:
 
     def django_process(src, filename):
         compiled = process(src, filename=filename,compiler = DjangoCompiler)
-        print compiled
+        print(compiled)
         t = django.template.Template(compiled)
 
         ctx = django.template.Context()
@@ -94,16 +99,20 @@ def run_case(case,process):
     global processors
     processor = processors[process]
     jade_file = open('cases/%s.jade'%case)
-    jade_src = jade_file.read().decode('utf-8')
+    jade_src = jade_file.read()
+    if isinstance(jade_src, six.binary_type):
+        jade_src = jade_src.decode('utf-8')
     jade_file.close()
 
     html_file = open('cases/%s.html'%case)
-    html_src = html_file.read().strip('\n').decode('utf-8')
+    html_src = html_file.read().strip('\n')
+    if isinstance(html_src, six.binary_type):
+        html_src = html_src.decode('utf-8')
     html_file.close()
     try:
         processed_jade = processor(jade_src, '%s.jade'%case).strip('\n')
-        print 'PROCESSED\n',processed_jade,len(processed_jade)
-        print 'EXPECTED\n',html_src,len(html_src)
+        print('PROCESSED\n',processed_jade,len(processed_jade))
+        print('EXPECTED\n',html_src,len(html_src))
         assert processed_jade==html_src
 
     except CurrentlyNotSupported:
@@ -122,10 +131,11 @@ def test_case_generator():
     global processors
 
     import os
+    import sys
     for dirname, dirnames, filenames in os.walk('cases/'):
         # raise Exception(filenames)
         filenames = filter(lambda x:x.endswith('.jade'),filenames)
-        filenames = map(lambda x:x.replace('.jade',''),filenames)
+        filenames = list(map(lambda x:x.replace('.jade',''),filenames))
         for processor in processors.keys():
             for filename in filenames:
                 if not filename in exclusions[processor]:
