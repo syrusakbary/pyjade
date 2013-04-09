@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import hashlib
 
 from django.template.base import TemplateDoesNotExist
@@ -5,7 +6,7 @@ from django.template.loader import BaseLoader, get_template_from_string, find_te
 import os
 
 from django.conf import settings
-from compiler import Compiler
+from .compiler import Compiler
 from pyjade import Parser
 
 from pyjade.utils import process

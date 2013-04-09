@@ -1,7 +1,12 @@
-from itertools import izip, imap
+from __future__ import absolute_import
+try:
+    from itertools import izip, imap
+except:
+    izip, imap = zip, map
 from copy import deepcopy
+import six
 
-from compiler import Compiler
+from .compiler import Compiler
 
 missing = object()
 
@@ -147,7 +152,7 @@ class odict(dict):
         return self.__class__(self)
 
     def items(self):
-        return zip(self._keys, self.values())
+        return list(zip(self._keys, self.values()))
 
     def iteritems(self):
         return izip(self._keys, self.itervalues())
@@ -178,8 +183,8 @@ class odict(dict):
     def update(self, *args, **kwargs):
         sources = []
         if len(args) == 1:
-            if hasattr(args[0], 'iteritems'):
-                sources.append(args[0].iteritems())
+            if hasattr(args[0], 'items'):
+                sources.append(six.iteritems(args[0]))
             else:
                 sources.append(iter(args[0]))
         elif args:
@@ -191,7 +196,7 @@ class odict(dict):
                 self[key] = val
 
     def values(self):
-        return map(self.get, self._keys)
+        return list(map(self.get, self._keys))
 
     def itervalues(self):
         return imap(self.get, self._keys)
@@ -215,8 +220,8 @@ class odict(dict):
     __copy__ = copy
     __iter__ = iterkeys
 
-from parser import Parser
-from ext.html import HTMLCompiler
+from .parser import Parser
+from .ext.html import HTMLCompiler
 
 def process(src,filename=None,parser=Parser,compiler=HTMLCompiler, **kwargs):
     _parser = parser(src,filename=filename)

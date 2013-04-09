@@ -1,5 +1,7 @@
-from lexer import Lexer
-import nodes
+from __future__ import absolute_import
+from .lexer import Lexer
+from . import nodes
+import six
 
 textOnly = ('script','style')
 
@@ -272,7 +274,7 @@ class Parser(object):
             #     continue
             elif 'attrs'==t:
                 tok = self.advance()
-                for n,v in tok.attrs.iteritems():
+                for n,v in six.iteritems(tok.attrs):
                     tag.setAttribute(n,v,n in tok.static_attrs)
                 continue
             else:
