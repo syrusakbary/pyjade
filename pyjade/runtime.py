@@ -37,7 +37,7 @@ def escape(s):
         s = s
     else:
         s = str(s)
-    
+
     return (s
         .replace('&', '&amp;')
         .replace('>', '&gt;')
@@ -46,11 +46,13 @@ def escape(s):
         .replace('"', '&#34;')
     )
 
-def attrs (attrs=[],terse=False):
+def attrs (attrs=[],terse=False, undefined=None):
     buf = []
     if bool(attrs):
         buf.append('')
         for k,v in attrs:
+            if undefined is not None and isinstance(v, undefined):
+                continue
             if v!=None and (v!=False or type(v)!=bool):
                 if k=='class' and isinstance(v, (list, tuple)):
                     v = ' '.join(map(str,flatten(v)))
