@@ -1,13 +1,19 @@
 import os
+import sys
+
 from pyjade import Parser, Compiler as _Compiler
-from pyjade.runtime import attrs
+from pyjade.runtime import attrs as _attrs
 from pyjade.utils import process
 ATTRS_FUNC = '__pyjade_attrs'
 ITER_FUNC = '__pyjade_iter'
+
+def attrs(attrs, terse=False):
+    return _attrs(attrs, terse, MakoUndefined)
+
 class Compiler(_Compiler):
     useRuntime = True
     def compile_top(self):
-        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s, iteration as %s %%>'%(ATTRS_FUNC,ITER_FUNC)
+        return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s, iteration as %s\nfrom mako.runtime import Undefined %%>' % (ATTRS_FUNC,ITER_FUNC)
 
     def interpolate(self,text):
         return self._interpolate(text,lambda x:'${%s}'%x)
@@ -25,7 +31,7 @@ class Compiler(_Compiler):
     def visitMixin(self,mixin):
         self.mixing += 1
         if not mixin.call:
-          self.buffer('<%%def name="%s(%s)">'%(mixin.name,mixin.args)) 
+          self.buffer('<%%def name="%s(%s)">'%(mixin.name,mixin.args))
           self.visitBlock(mixin.block)
           self.buffer('</%def>')
         elif mixin.block:
@@ -82,13 +88,14 @@ class Compiler(_Compiler):
               codeTag = code.val.strip().split(' ',1)[0]
               if codeTag in self.autocloseCode:
                   self.buf.append('</%%%s>'%codeTag)
- 
+
     def visitEach(self,each):
         self.buf.append('\\\n%% for %s in %s(%s,%d):\n'%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
         self.buf.append('\\\n% endfor\n')
+
     def attributes(self,attrs):
-        return "${%s(%s)}"%(ATTRS_FUNC,attrs)
+        return "${%s(%s, undefined=Undefined)}"%(ATTRS_FUNC,attrs)
 
 
 

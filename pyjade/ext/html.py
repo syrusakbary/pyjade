@@ -43,7 +43,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
         try:
             value = eval(value, self.global_context, self.local_context)
         except:
-            return ''
+            return None
         return value
 
     def _get_value(self, attr):

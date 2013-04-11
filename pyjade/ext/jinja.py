@@ -1,12 +1,19 @@
 from jinja2.ext import Extension
 import os
+import pyjade.runtime
+
 from pyjade import Parser, Compiler as _Compiler
-from pyjade.runtime import attrs, iteration
+from pyjade.runtime import attrs as _attrs, iteration
 from jinja2.debug import fake_exc_info
+from jinja2.runtime import Undefined
 from pyjade.utils import process
 
 ATTRS_FUNC = '__pyjade_attrs'
 ITER_FUNC = '__pyjade_iter'
+
+def attrs(attrs, terse=False):
+    return _attrs(attrs, terse, Undefined)
+
 class Compiler(_Compiler):
 
     def visitCodeBlock(self,block):
@@ -26,7 +33,7 @@ class Compiler(_Compiler):
     def visitMixin(self,mixin):
         self.mixing += 1
         if not mixin.call:
-          self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args)) 
+          self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args))
           self.visitBlock(mixin.block)
           self.buffer('{% endmacro %}')
         elif mixin.block:
@@ -58,7 +65,7 @@ class Compiler(_Compiler):
               codeTag = code.val.strip().split(' ',1)[0]
               if codeTag in self.autocloseCode:
                   self.buf.append('{%% end%s %%}'%codeTag)
- 
+
     def visitEach(self,each):
         self.buf.append("{%% for %s in %s(%s,%d) %%}"%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
         self.visit(each.block)
@@ -97,7 +104,7 @@ class PyJadeExtension(Extension):
         environment.globals[ITER_FUNC] = iteration
 
     def preprocess(self, source, name, filename=None):
-        if (not name or 
+        if (not name or
            (name and not os.path.splitext(name)[1] in self.file_extensions)):
             return source
         return process(source,filename=name,compiler=Compiler,**self.options)
