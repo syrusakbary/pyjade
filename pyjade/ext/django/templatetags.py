@@ -38,7 +38,7 @@ class Evaluator(template.Node):
     }
     context['false'] = False
     context['true'] = True
-    return str(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
+    return unicode(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
 
 @register.tag(name="__pyjade_set")
 def do_set(parser, token):
