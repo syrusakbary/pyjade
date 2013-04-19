@@ -172,8 +172,7 @@ def capitalize(text,ast):
   return text.capitalize()
 ```
 
-Using templatetags (and any feature of the compiled-to language)
-===========================================================
+### Using templatetags (and any feature of the compiled-to language)
 
 **Using Django and crispy-forms as an illustrative example but the information
 can be generalized.**
