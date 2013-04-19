@@ -174,8 +174,8 @@ def capitalize(text,ast):
 
 ### Using templatetags (and any feature of the compiled-to language)
 
-**Using Django and crispy-forms as an illustrative example but the information
-can be generalized.**
+*Using Django and crispy-forms as an illustrative example but the information
+can be generalized.*
 
 If you need to use templatetags, you can use Jade's syntax for rendering code:
 
