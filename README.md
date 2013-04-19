@@ -161,9 +161,9 @@ Converts to:
 Register filters
 ================
 
-If you want to register a function as a filter, you only have to 
+If you want to register a function as a filter, you only have to
 decorate the function with `pyjade.register_filter("filter_name")`
-    
+
 ```python
 import pyjade
 
@@ -172,13 +172,42 @@ def capitalize(text,ast):
   return text.capitalize()
 ```
 
+### Using templatetags (and any feature of the compiled-to language)
+
+*Using Django and crispy-forms as an illustrative example but the information
+can be generalized.*
+
+If you need to use templatetags, you can use Jade's syntax for rendering code:
+
+```jade
+- load crispy_forms_tags
+- crispy form
+```
+
+This will compile into
+
+```html
+{% load crispy_forms_tags %}
+{% crispy form %}
+```
+
+If you have any trouble with this feature, or there's some feature of your
+template language that is being misinterpreted when using this syntax, you
+can also do something like this:
+
+```jade
+| {% load crispy_forms_tags %}
+| {% crispy form %}
+```
+
+This will compile into the same Django template snippet.
 
 TESTING
 =======
 
 You must have `nose` package installed.
 You can do the tests with
-    
+
 ```console
 ./test.sh
 ```
