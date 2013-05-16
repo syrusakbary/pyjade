@@ -49,17 +49,17 @@ def escape(s):
 def attrs (attrs=[],terse=False, undefined=None):
     buf = []
     if bool(attrs):
-        buf.append('')
+        buf.append(u'')
         for k,v in attrs:
             if undefined is not None and isinstance(v, undefined):
                 continue
             if v!=None and (v!=False or type(v)!=bool):
                 if k=='class' and isinstance(v, (list, tuple)):
-                    v = ' '.join(map(str,flatten(v)))
+                    v = u' '.join(map(str,flatten(v)))
                 t = v==True and type(v)==bool
                 if t and not terse: v=k
-                buf.append('%s'%k if terse and t else '%s="%s"'%(k,v))
-    return ' '.join(buf)
+                buf.append(u'%s'%k if terse and t else u'%s="%s"'%(k,v))
+    return u' '.join(buf)
 
 def is_mapping(value):
     return isinstance(value, MappingType)
