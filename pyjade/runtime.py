@@ -58,7 +58,7 @@ def attrs (attrs=[],terse=False, undefined=None):
                     v = u' '.join(map(str,flatten(v)))
                 t = v==True and type(v)==bool
                 if t and not terse: v=k
-                buf.append(u'%s'%k if terse and t else u'%s="%s"'%(k,v))
+                buf.append(u'%s'%k if terse and t else u'%s="%s"'%(k,escape(v)))
     return u' '.join(buf)
 
 def is_mapping(value):
