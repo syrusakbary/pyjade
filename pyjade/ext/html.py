@@ -3,7 +3,7 @@
 import contextlib
 
 import pyjade
-from pyjade.runtime import is_mapping, iteration
+from pyjade.runtime import is_mapping, iteration, escape
 import six
 
 def process_param(key, value, terse=False):
@@ -137,7 +137,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
                 value = self._get_value(attr)
 
                 if value not in (None,False):
-                    params.append((attr['name'], value))
+                    params.append((attr['name'], escape(value)))
         if classes:
             classes = [six.text_type(c) for c in classes]
             params.append(('class', " ".join(classes)))
