@@ -73,7 +73,7 @@ class Compiler(object):
         self.xml = False
         self.mixing = 0
         self.variable_start_string = options.get("variable_start_string", "{{")
-        self.variable_end_string = options.get("variable_start_string", "}}")
+        self.variable_end_string = options.get("variable_end_string", "}}")
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
 
     def compile_top(self):
