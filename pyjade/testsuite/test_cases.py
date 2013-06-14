@@ -18,6 +18,8 @@ try:
     from jinja2 import Environment, FileSystemLoader
     from pyjade.ext.jinja import PyJadeExtension
     jinja_env = Environment(extensions=[PyJadeExtension],loader=FileSystemLoader('cases/'))
+    jinja_env.variable_start_string = "{#%"
+    jinja_env.variable_end_string = "%#}"
     def jinja_process (src, filename):
         global jinja_env
         template = jinja_env.get_template(filename)

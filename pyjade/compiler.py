@@ -72,6 +72,8 @@ class Compiler(object):
         self.terse = False
         self.xml = False
         self.mixing = 0
+        self.variable_start_string = options.get("variable_start_string", "{{")
+        self.variable_end_string = options.get("variable_start_string", "}}")
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
 
     def compile_top(self):
@@ -126,9 +128,9 @@ class Compiler(object):
 
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
-        if block.mode=='prepend': self.buffer('{{super()}}')
+        if block.mode=='prepend': self.buffer('%ssuper()%s' % (self.variable_start_string, self.variable_end_string))
         self.visitBlock(block)
-        if block.mode=='append': self.buffer('{{super()}}')
+        if block.mode=='append': self.buffer('%ssuper()%s' % (self.variable_start_string, self.variable_end_string))
         self.buffer('{% endblock %}')
 
     def visitDoctype(self,doctype=None):
@@ -144,7 +146,7 @@ class Compiler(object):
           self.visitBlock(mixin.block)
           self.buffer('{% endmacro %}')
         else:
-          self.buffer('{{%s(%s)}}'%(mixin.name,mixin.args))
+          self.buffer('%ss(%s)%s' % (self.variable_start_string, mixin.name, mixin.args, self.variable_end_string))
     def visitTag(self,tag):
         self.indents += 1
         name = tag.name
@@ -197,7 +199,7 @@ class Compiler(object):
         return self.RE_INTERPOLATE.sub(lambda matchobj:repl(matchobj.group(3)),attr)
 
     def interpolate(self,text):
-        return self._interpolate(text,lambda x:'{{%s}}'%x)
+        return self._interpolate(text,lambda x:'%s%s%s' % (self.variable_start_string, x, self.variable_end_string))
  
     def visitText(self,text):
         text = ''.join(text.nodes)
@@ -250,7 +252,7 @@ class Compiler(object):
 
 
     def visitVar(self,var,escape=False):
-        return ('{{%s%s}}'%(var,'|escape' if escape else ''))
+        return ('%s%s%s%s' % (self.variable_start_string, var, '|escape' if escape else '', self.variable_end_string))
 
     def visitCode(self,code):
         if code.buffer:
@@ -275,7 +277,7 @@ class Compiler(object):
         self.buf.append('{% endfor %}')
 
     def attributes(self,attrs):
-        return "{{__pyjade_attrs(%s)}}"%attrs
+        return "%s__pyjade_attrs(%s)%s" % (self.variable_start_string, attrs, self.variable_end_string)
 
     def visitDynamicAttributes(self,attrs):
         buf,classes,params = [],[],{}
