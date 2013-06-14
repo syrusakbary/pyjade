@@ -2,9 +2,9 @@ from jinja2.ext import Extension
 import os
 import pyjade.runtime
 
+from pyjade import Compiler as _Compiler
 from pyjade import Parser, Compiler as _Compiler
 from pyjade.runtime import attrs as _attrs, iteration
-from jinja2.debug import fake_exc_info
 from jinja2.runtime import Undefined
 from pyjade.utils import process
 
