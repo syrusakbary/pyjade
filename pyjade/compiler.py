@@ -78,7 +78,7 @@ class Compiler(object):
 
     def compile_top(self):
         return ''
-    
+
     def compile(self):
         self.buf = [self.compile_top()]
         self.lastBufferedIdx = -1
@@ -141,12 +141,12 @@ class Compiler(object):
         self.hasCompiledDoctype = True
 
     def visitMixin(self,mixin):
-        if mixin.block: 
-          self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args)) 
+        if mixin.block:
+          self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args))
           self.visitBlock(mixin.block)
           self.buffer('{% endmacro %}')
         else:
-          self.buffer('%ss(%s)%s' % (self.variable_start_string, mixin.name, mixin.args, self.variable_end_string))
+          self.buffer('%s%s(%s)%s' % (self.variable_start_string, mixin.name, mixin.args, self.variable_end_string))
     def visitTag(self,tag):
         self.indents += 1
         name = tag.name
@@ -200,7 +200,7 @@ class Compiler(object):
 
     def interpolate(self,text):
         return self._interpolate(text,lambda x:'%s%s%s' % (self.variable_start_string, x, self.variable_end_string))
- 
+
     def visitText(self,text):
         text = ''.join(text.nodes)
         text = self.interpolate(text)
@@ -320,7 +320,7 @@ class Compiler(object):
                         self.buf.append(' %s="%s"'%(n,n))
             else:
                 temp_attrs.append(attr)
-        
+
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
 
     @classmethod
