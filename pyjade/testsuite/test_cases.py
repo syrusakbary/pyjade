@@ -17,13 +17,29 @@ def teardown_func():
 try:
     from jinja2 import Environment, FileSystemLoader
     from pyjade.ext.jinja import PyJadeExtension
-    jinja_env = Environment(extensions=[PyJadeExtension],loader=FileSystemLoader('cases/'))
+    jinja_env = Environment(extensions=[PyJadeExtension], loader=FileSystemLoader('cases/'))
     def jinja_process (src, filename):
         global jinja_env
         template = jinja_env.get_template(filename)
         return template.render()
 
     processors['Jinja2'] = jinja_process
+except ImportError:
+    pass
+
+# Test jinja2 with custom variable syntax: "{%#.-.** variable **.-.#%}"
+try:
+    from jinja2 import Environment, FileSystemLoader
+    from pyjade.ext.jinja import PyJadeExtension
+    jinja_env = Environment(extensions=[PyJadeExtension], loader=FileSystemLoader('cases/'),
+			variable_start_string = "{%#.-.**", variable_end_string="**.-.#%}"
+    )
+    def jinja_process_variable_start_string (src, filename):
+        global jinja_env
+        template = jinja_env.get_template(filename)
+        return template.render()
+
+    processors['Jinja2-variable_start_string'] = jinja_process_variable_start_string
 except ImportError:
     pass
 
@@ -123,6 +139,7 @@ exclusions = {
     'Mako': set(['layout']),
     'Tornado': set(['layout']),
     'Jinja2': set(['layout']),
+    'Jinja2-variable_start_string': set(['layout']),
     'Django': set(['layout'])}
     
 
