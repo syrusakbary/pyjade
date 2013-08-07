@@ -1,0 +1,19 @@
+mixin style(href)
+    link(rel="stylesheet", type="text/css", href='/static/'+href)
+
+mixin script(src)
+    script(type="text/javascript", src='/static/'+src)
+
+!!! 5
+html(lang="ru")
+    head
+        title Title
+
+        +style("commons/layout/style.css")
+
+    body
+        - var arr = ['white', 'blue', 'red'];
+        each val in arr
+            div
+                #{val}
+        Hello world
