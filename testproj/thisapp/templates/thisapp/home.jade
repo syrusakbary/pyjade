@@ -1,9 +1,4 @@
-!!! 5
-html
-    head
-        title Title
-    body
-        include thisapp/mymixins
-        +hello('black')
-        +hello('green')
-        +hello('yellow')
+extends thisapp/base
+
+block content
+    +hello('yellow')
