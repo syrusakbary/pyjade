@@ -132,13 +132,14 @@ def do_macro(parser, token):
 
 class LoadMacrosNode(template.Node):
 
-    def __init__(self, file_name_expr):
+    def __init__(self, file_name_expr, parser):
         self.file_name_expr = file_name_expr
         self.loaded = False
 
     def render(self, context):
         if not self.loaded:
-            _setup_macros_dict(context)
+            if not "_macros" in context:
+                context["_macros"] = {}  # _setup_macros_dict_for_context(context)
             context["_macros"].update(self.load_macros(context))
 
         # empty string - {% loadmacros %} tag does no output
@@ -185,7 +186,7 @@ def do_loadmacros(parser, token):
         m = ("'%s' tag requires at least one argument (macro name)"
              % token.contents.split()[0])
         raise template.TemplateSyntaxError, m
-    node = LoadMacrosNode(parser.compile_filter(filename))
+    node = LoadMacrosNode(parser.compile_filter(filename), parser)
     preloaded_macros = node.load_macros({}, ignore_failures=True)
     if preloaded_macros:
         parser._macros = getattr(parser, "_macros", {})
