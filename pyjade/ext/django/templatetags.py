@@ -1,3 +1,5 @@
+# -*- coding: UTF-8 -*-
+
 """
 A smarter {% if %} tag for django templates.
 
