@@ -1,3 +1,7 @@
+# -*- coding: UTF-8 -*-
+
+from __future__ import unicode_literals
+
 """
 A smarter {% if %} tag for django templates.
 
