@@ -1,5 +1,10 @@
 # -*- coding: UTF-8 -*-
 
+<<<<<<< HEAD
+=======
+from __future__ import unicode_literals
+
+>>>>>>> 4c8d29a1f4c446aa933d170cee46fd896b59b52a
 """
 A smarter {% if %} tag for django templates.
 
