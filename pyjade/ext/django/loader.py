@@ -71,7 +71,7 @@ class Loader(BaseLoader):
             if not hasattr(template, 'render'):
                 try:
                     template = get_template_from_string(process(source,filename=template_name,compiler=Compiler), origin, template_name)
-                except TemplateDoesNotExist, UnboundLocalError:
+                except (TemplateDoesNotExist, UnboundLocalError)::
                     # If compiling the template we found raises TemplateDoesNotExist,
                     # back off to returning he source and display name for the template
                     # we were asked to load. This allows for correct identification (later)
