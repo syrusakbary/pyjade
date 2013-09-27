@@ -26,6 +26,9 @@ class Compiler(_Compiler):
     #     else:
     #       self.buffer('{{%s(%s)}}'%(mixin.name,mixin.args))
 
+    def interpolate(self,text):
+        return self._interpolate(text,lambda x:'{{%s(%s)}}' % (ESCAPE_FUNC, x))
+
     def visitMixin(self,mixin):
         raise CurrentlyNotSupported('mixin')
 
