@@ -75,6 +75,7 @@ class Compiler(_Compiler):
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
+            val = self.var_processor(val)
             self.buf.append(self.visitVar(val, code.escape))
         else:
             self.buf.append('<%% %s %%>'%code.val)

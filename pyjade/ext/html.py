@@ -99,6 +99,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
     def visitCode(self, code):
         if code.buffer:
             val = code.val.lstrip()
+            val = self.var_processor(val)
             val = self._do_eval(val)
             if code.escape:
                 val = str(val).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')

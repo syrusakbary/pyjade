@@ -62,6 +62,7 @@ class Compiler(object):
         self.debug = options.get('compileDebug',False)!=False
         self.filters.update(options.get('filters',{}))
         self.doctypes.update(options.get('doctypes',{}))
+        # self.var_processor = options.get('var_processor', lambda x: x)
         self.selfClosing.extend(options.get('selfClosing',[]))
         self.autocloseCode.extend(options.get('autocloseCode',[]))
         self.inlineTags.extend(options.get('inlineTags',[]))
@@ -75,6 +76,11 @@ class Compiler(object):
         self.variable_start_string = options.get("variable_start_string", "{{")
         self.variable_end_string = options.get("variable_end_string", "}}")
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
+
+    def var_processor(self, var):
+        if isinstance(var,six.string_types) and var.startswith('_ '):
+            var = '_("%s")'%var[2:]
+        return var
 
     def compile_top(self):
         return ''
@@ -251,12 +257,14 @@ class Compiler(object):
         if conditional.type in ['if','unless']: self.buf.append('{% endif %}')
 
 
-    def visitVar(self,var,escape=False):
+    def visitVar(self, var, escape=False):
+        var = self.var_processor(var)
         return ('%s%s%s%s' % (self.variable_start_string, var, '|escape' if escape else '', self.variable_end_string))
 
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
+
             self.buf.append(self.visitVar(val, code.escape))
         else:
             self.buf.append('{%% %s %%}'%code.val)

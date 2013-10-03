@@ -38,6 +38,7 @@ class Compiler(_Compiler):
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
+            val = self.var_processor(val)
             self.buf.append((('{{%s(%%s)}}'%ESCAPE_FUNC) if code.escape else '{{%s}}')%val)
         else:
             self.buf.append('{%% %s %%}'%code.val)
