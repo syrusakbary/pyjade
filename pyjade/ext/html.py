@@ -83,7 +83,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
             self.mixins[mixin.name](self, mixin.args)
 
     def visitAssignment(self, assignment):
-        self.global_context[assignment.name] = eval(assignment.val)
+        self.global_context[assignment.name] = self._do_eval(assignment.val)
 
     def visitConditional(self, conditional):
         if not conditional.sentence:
@@ -135,8 +135,9 @@ class HTMLCompiler(pyjade.compiler.Compiler):
                     classes.append(value)
             else:
                 value = self._get_value(attr)
-
-                if value not in (None,False):
+                if value is True:
+                    params.append((attr['name'], True))
+                elif value not in (None,False):
                     params.append((attr['name'], escape(value)))
         if classes:
             classes = [six.text_type(c) for c in classes]
