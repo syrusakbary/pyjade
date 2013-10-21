@@ -123,7 +123,7 @@ class Compiler(object):
 
     def visitNode (self,node,*args,**kwargs):
         name = node.__class__.__name__
-        if self.instring and name<>'Tag':
+        if self.instring and name!='Tag':
             self.buffer('\n')
             self.instring = False
         return getattr(self,'visit%s'%name)(node,*args,**kwargs)
