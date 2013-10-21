@@ -76,6 +76,7 @@ class Compiler(object):
         self.variable_start_string = options.get("variable_start_string", "{{")
         self.variable_end_string = options.get("variable_end_string", "}}")
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
+        self.instring = False
 
     def var_processor(self, var):
         if isinstance(var,six.string_types) and var.startswith('_ '):
@@ -122,7 +123,9 @@ class Compiler(object):
 
     def visitNode (self,node,*args,**kwargs):
         name = node.__class__.__name__
-        # print name, node
+        if self.instring and name<>'Tag':
+            self.buffer('\n')
+            self.instring = False
         return getattr(self,'visit%s'%name)(node,*args,**kwargs)
 
     def visitLiteral(self,node):
@@ -153,6 +156,7 @@ class Compiler(object):
           self.buffer('{% endmacro %}')
         else:
           self.buffer('%s%s(%s)%s' % (self.variable_start_string, mixin.name, mixin.args, self.variable_end_string))
+
     def visitTag(self,tag):
         self.indents += 1
         name = tag.name
@@ -163,6 +167,8 @@ class Compiler(object):
 
         if self.pp and name not in self.inlineTags and not tag.inline:
             self.buffer('\n'+'  '*(self.indents-1))
+        if name in self.inlineTags or tag.inline:
+            self.instring = False
 
         closed = name in self.selfClosing and not self.xml
         self.buffer('<%s'%name)
@@ -175,11 +181,11 @@ class Compiler(object):
             self.escape = 'pre' == tag.name
             # empirically check if we only contain text
             textOnly = tag.textOnly or not bool(len(tag.block.nodes))
+            self.instring = False
             self.visit(tag.block)
 
             if self.pp and not name in self.inlineTags and not textOnly:
-                self.buffer('\n')
-                self.buffer('  '*(self.indents-1))
+                self.buffer('\n'+'  '*(self.indents-1))
 
             self.buffer('</%s>'%name)
         self.indents -= 1
@@ -211,7 +217,13 @@ class Compiler(object):
         text = ''.join(text.nodes)
         text = self.interpolate(text)
         self.buffer(text)
-        self.buffer('\n')
+        if self.pp: self.buffer('\n')
+
+    def visitString(self,text):
+        text = ''.join(text.nodes)
+        text = self.interpolate(text)
+        self.buffer(text)
+        self.instring = True
 
     def visitComment(self,comment):
         if not comment.buffer: return

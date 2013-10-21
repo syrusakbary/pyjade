@@ -23,7 +23,8 @@ class Lexer(object):
     RE_DOCTYPE = re.compile(r'^(?:!!!|doctype) *([^\n]+)?')
     RE_ID = re.compile(r'^#([\w-]+)')
     RE_CLASS = re.compile(r'^\.([\w-]+)')
-    RE_TEXT = re.compile(r'^(?:\| ?)?([^\n]+)')
+    RE_STRING = re.compile(r'^(?:\| ?)([^\n]+)')
+    RE_TEXT = re.compile(r'^([^\n]+)')
     RE_EXTENDS = re.compile(r'^extends? +([^\n]+)')
     RE_PREPEND = re.compile(r'^prepend +([^\n]+)')
     RE_APPEND = re.compile(r'^append +([^\n]+)')
@@ -155,6 +156,9 @@ class Lexer(object):
 
     def className(self):
         return self.scan(self.RE_CLASS, 'class')
+
+    def string(self):
+        return self.scan(self.RE_STRING, 'string')
 
     def text(self):
         return self.scan(self.RE_TEXT, 'text')
@@ -380,7 +384,6 @@ class Lexer(object):
             if captures and captures[1]: self.indentRe = regex
 
         if captures:
-
             indents = len(captures[1])
             self.lineno += 1
             self.consume(indents+1)
@@ -445,6 +448,7 @@ class Lexer(object):
             or self.indent() \
             or self.comment() \
             or self.colon() \
+            or self.string() \
             or self.text()
 
             ##or self._while() \

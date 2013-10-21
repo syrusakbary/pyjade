@@ -68,7 +68,6 @@ class Parser(object):
 
     def parseExpr(self):
         t = self.peek().type
-  
         if 'yield' == t:
             self.advance()
             block = nodes.Block()
@@ -86,6 +85,12 @@ class Parser(object):
         else:
             raise Exception('unexpected token "%s" in file %s on line %d' %
                             (t, self.filename, self.line()))
+
+    def parseString(self):
+        tok = self.expect('string')
+        node = nodes.String(tok.val)
+        node.line = self.line()
+        return node
 
     def parseText(self):
         tok = self.expect('text')
@@ -289,7 +294,8 @@ class Parser(object):
             self.advance()
 
         t = self.peek().type
-        if 'text'==t: tag.text = self.parseText()
+        if 'string'==t: tag.text = self.parseString()
+        elif 'text'==t: tag.text = self.parseText()
         elif 'code'==t: tag.code = self.parseCode()
         elif ':'==t:
             self.advance()

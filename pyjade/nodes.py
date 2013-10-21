@@ -169,3 +169,5 @@ class Text(Node):
 
 	def append(self,node):
 		return self.nodes.append(node)
+
+class String(Text): pass
