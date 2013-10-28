@@ -8,13 +8,13 @@ def register_filter(name=None):
     return decorator
 
 @register_filter('cdata')
-def cdata_filter(x,y):
+def cdata_filter(x, y):
     return '<![CDATA[\n%s\n]]>'%x
 
 try:
     import coffeescript
     @register_filter('coffeescript')
-    def coffeescript_filter(x,y):
+    def coffeescript_filter(x, y):
         return '<script>%s</script>' % coffeescript.compile(x)
 
 except ImportError:
@@ -23,7 +23,7 @@ except ImportError:
 try:
     import markdown
     @register_filter('markdown')
-    def markdown_filter(x,y):
+    def markdown_filter(x, y):
         return markdown.markdown(x, output_format='html5')
 
 except ImportError:

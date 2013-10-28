@@ -52,21 +52,20 @@ class Compiler(object):
 
     filters = {}
 
-    useRuntime = True
-    def __init__(self,node,**options):
+    def __init__(self, node, **options):
         self.options = options
         self.node = node
         self.hasCompiledDoctype = False
         self.hasCompiledTag = False
-        self.pp = options.get('pretty',True)
-        self.debug = options.get('compileDebug',False)!=False
-        self.filters.update(options.get('filters',{}))
-        self.doctypes.update(options.get('doctypes',{}))
+        self.pp = options.get('pretty', True)
+        self.debug = options.get('compileDebug', False) is not False
+        self.filters.update(options.get('filters', {}))
+        self.doctypes.update(options.get('doctypes', {}))
         # self.var_processor = options.get('var_processor', lambda x: x)
-        self.selfClosing.extend(options.get('selfClosing',[]))
-        self.autocloseCode.extend(options.get('autocloseCode',[]))
-        self.inlineTags.extend(options.get('inlineTags',[]))
-        if 'useRuntime' in options: self.useRuntime = options.get('useRuntime')
+        self.selfClosing.extend(options.get('selfClosing', []))
+        self.autocloseCode.extend(options.get('autocloseCode', []))
+        self.inlineTags.extend(options.get('inlineTags', []))
+        self.useRuntime = options.get('useRuntime', True)
         self.extension = options.get('extension', None) or '.jade'
         self.indents = 0
         self.doctype = None
@@ -95,21 +94,22 @@ class Compiler(object):
             compiled = six.text_type(compiled, 'utf8')
         return compiled
 
-    def setDoctype(self,name):
-        self.doctype = self.doctypes.get(name or 'default','<!DOCTYPE %s>'%name)
+    def setDoctype(self, name):
+        self.doctype = self.doctypes.get(name or 'default',
+                                         '<!DOCTYPE %s>' % name)
         self.terse = name in ['5','html']
         self.xml = self.doctype.startswith('<?xml')
 
-    def buffer (self,str):
+    def buffer(self, str):
         if self.lastBufferedIdx == len(self.buf):
             self.lastBuffered += str
-            self.buf[self.lastBufferedIdx-1] = self.lastBuffered
+            self.buf[self.lastBufferedIdx - 1] = self.lastBuffered
         else:
             self.buf.append(str)
             self.lastBuffered = str;
             self.lastBufferedIdx = len(self.buf)
 
-    def visit(self,node,*args,**kwargs):
+    def visit(self, node, *args, **kwargs):
         # debug = self.debug
         # if debug:
         #     self.buf.append('__jade.unshift({ lineno: %d, filename: %s });' % (node.line,('"%s"'%node.filename) if node.filename else '__jade[0].filename'));
@@ -118,60 +118,66 @@ class Compiler(object):
         #     self.buf.pop()
         #     self.buf.pop()
 
-        self.visitNode(node,*args,**kwargs)
+        self.visitNode(node, *args, **kwargs)
         # if debug: self.buf.append('__jade.shift();')
 
-    def visitNode (self,node,*args,**kwargs):
+    def visitNode (self, node, *args, **kwargs):
         name = node.__class__.__name__
-        if self.instring and name!='Tag':
+        if self.instring and name != 'Tag':
             self.buffer('\n')
             self.instring = False
-        return getattr(self,'visit%s'%name)(node,*args,**kwargs)
+        return getattr(self, 'visit%s' % name)(node, *args, **kwargs)
 
-    def visitLiteral(self,node):
+    def visitLiteral(self, node):
         self.buffer(node.str)
 
-    def visitBlock(self,block):
+    def visitBlock(self, block):
         for node in block.nodes:
             self.visit(node)
 
-    def visitCodeBlock(self,block):
-        self.buffer('{%% block %s %%}'%block.name)
-        if block.mode=='prepend': self.buffer('%ssuper()%s' % (self.variable_start_string, self.variable_end_string))
+    def visitCodeBlock(self, block):
+        self.buffer('{%% block %s %%}' % block.name)
+        if block.mode=='prepend':
+            self.buffer('%ssuper()%s' % (self.variable_start_string,
+                                         self.variable_end_string))
         self.visitBlock(block)
-        if block.mode=='append': self.buffer('%ssuper()%s' % (self.variable_start_string, self.variable_end_string))
+        if block.mode == 'append':
+            self.buffer('%ssuper()%s' % (self.variable_start_string,
+                                         self.variable_end_string))
         self.buffer('{% endblock %}')
 
     def visitDoctype(self,doctype=None):
-        if doctype  and (doctype.val or not self.doctype):
+        if doctype and (doctype.val or not self.doctype):
             self.setDoctype(doctype.val or 'default')
 
-        if self.doctype: self.buffer(self.doctype)
+        if self.doctype:
+            self.buffer(self.doctype)
         self.hasCompiledDoctype = True
 
     def visitMixin(self,mixin):
         if mixin.block:
-          self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args))
-          self.visitBlock(mixin.block)
-          self.buffer('{% endmacro %}')
+            self.buffer('{%% macro %s(%s) %%}' % (mixin.name, mixin.args))
+            self.visitBlock(mixin.block)
+            self.buffer('{% endmacro %}')
         else:
-          self.buffer('%s%s(%s)%s' % (self.variable_start_string, mixin.name, mixin.args, self.variable_end_string))
+          self.buffer('%s%s(%s)%s' % (self.variable_start_string, mixin.name,
+                                      mixin.args, self.variable_end_string))
 
     def visitTag(self,tag):
         self.indents += 1
         name = tag.name
         if not self.hasCompiledTag:
-            if not self.hasCompiledDoctype and 'html'==name:
+            if not self.hasCompiledDoctype and 'html' == name:
                 self.visitDoctype()
             self.hasCompiledTag = True
 
         if self.pp and name not in self.inlineTags and not tag.inline:
-            self.buffer('\n'+'  '*(self.indents-1))
+            self.buffer('\n' + '  ' * (self.indents - 1))
         if name in self.inlineTags or tag.inline:
             self.instring = False
 
         closed = name in self.selfClosing and not self.xml
-        self.buffer('<%s'%name)
+        self.buffer('<%s' % name)
         self.visitAttributes(tag.attrs)
         self.buffer('/>' if not self.terse and closed else '>')
 
@@ -185,39 +191,41 @@ class Compiler(object):
             self.visit(tag.block)
 
             if self.pp and not name in self.inlineTags and not textOnly:
-                self.buffer('\n'+'  '*(self.indents-1))
+                self.buffer('\n' + '  ' * (self.indents-1))
 
-            self.buffer('</%s>'%name)
+            self.buffer('</%s>' % name)
         self.indents -= 1
 
     def visitFilter(self,filter):
         if filter.name not in self.filters:
           if filter.isASTFilter:
-            raise Exception('unknown ast filter "%s"'%filter.name)
+            raise Exception('unknown ast filter "%s"' % filter.name)
           else:
-            raise Exception('unknown filter "%s"'%filter.name)
+            raise Exception('unknown filter "%s"' % filter.name)
 
         fn = self.filters.get(filter.name)
         if filter.isASTFilter:
-            self.buf.append(fn(filter.block,self,filter.attrs))
+            self.buf.append(fn(filter.block, self, filter.attrs))
         else:
             text = ''.join(filter.block.nodes)
             text = self.interpolate(text)
             filter.attrs = filter.attrs or {}
-            filter.attrs['filename'] = self.options.get('filename',None)
-            self.buffer(fn(text,filter.attrs))
+            filter.attrs['filename'] = self.options.get('filename', None)
+            self.buffer(fn(text, filter.attrs))
 
-    def _interpolate(self,attr,repl):
-        return self.RE_INTERPOLATE.sub(lambda matchobj:repl(matchobj.group(3)),attr)
+    def _interpolate(self, attr, repl):
+        return self.RE_INTERPOLATE.sub(lambda matchobj:repl(matchobj.group(3)),
+                                       attr)
 
     def interpolate(self,text):
-        return self._interpolate(text,lambda x:'%s%s|escape%s' % (self.variable_start_string, x, self.variable_end_string))
+        return self._interpolate(text, lambda x:'%s%s|escape%s' % (self.variable_start_string, x, self.variable_end_string))
 
     def visitText(self,text):
         text = ''.join(text.nodes)
         text = self.interpolate(text)
         self.buffer(text)
-        if self.pp: self.buffer('\n')
+        if self.pp:
+            self.buffer('\n')
 
     def visitString(self,text):
         text = ''.join(text.nodes)
@@ -227,51 +235,56 @@ class Compiler(object):
 
     def visitComment(self,comment):
         if not comment.buffer: return
-        if self.pp: self.buffer('\n'+'  '*(self.indents))
-        self.buffer('<!--%s-->'%comment.val)
+        if self.pp:
+            self.buffer('\n' + '  ' * (self.indents))
+        self.buffer('<!--%s-->' % comment.val)
 
     def visitAssignment(self,assignment):
-        self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))
+        self.buffer('{%% set %s = %s %%}' % (assignment.name, assignment.val))
 
 
     def format_path(self,path):
-        has_extension = os.path.basename(path).find('.')>-1
-        if not has_extension: path += self.extension
+        has_extension = os.path.basename(path).find('.') > -1
+        if not has_extension:
+            path += self.extension
         return path
 
     def visitExtends(self,node):
         path = self.format_path(node.path)
-        self.buffer('{%% extends "%s" %%}'%(path))
+        self.buffer('{%% extends "%s" %%}' % (path))
 
     def visitInclude(self,node):
         path = self.format_path(node.path)
-        self.buffer('{%% include "%s" %%}'%(path))
+        self.buffer('{%% include "%s" %%}' % (path))
 
-    def visitBlockComment(self,comment):
-        if not comment.buffer: return
+    def visitBlockComment(self, comment):
+        if not comment.buffer:
+            return
         isConditional = comment.val.strip().startswith('if')
-        self.buffer('<!--[%s]>'%comment.val.strip() if isConditional else '<!--%s'%comment.val)
+        self.buffer('<!--[%s]>' % comment.val.strip() if isConditional else '<!--%s' % comment.val)
         self.visit(comment.block)
         self.buffer('<![endif]-->' if isConditional else '-->')
 
-    def visitConditional(self,conditional):
+    def visitConditional(self, conditional):
         TYPE_CODE = {
             'if': lambda x: 'if %s'%x,
             'unless': lambda x: 'if not %s'%x,
             'elif': lambda x: 'elif %s'%x,
             'else': lambda x: 'else'
         }
-        self.buf.append('{%% %s %%}'%TYPE_CODE[conditional.type](conditional.sentence))
+        self.buf.append('{%% %s %%}' % TYPE_CODE[conditional.type](conditional.sentence))
         if conditional.block:
             self.visit(conditional.block)
             for next in conditional.next:
               self.visitConditional(next)
-        if conditional.type in ['if','unless']: self.buf.append('{% endif %}')
+        if conditional.type in ['if','unless']:
+            self.buf.append('{% endif %}')
 
 
     def visitVar(self, var, escape=False):
         var = self.var_processor(var)
-        return ('%s%s%s%s' % (self.variable_start_string, var, '|escape' if escape else '', self.variable_end_string))
+        return ('%s%s%s%s' % (self.variable_start_string, var,
+                              '|escape' if escape else '', self.variable_end_string))
 
     def visitCode(self,code):
         if code.buffer:
@@ -279,7 +292,7 @@ class Compiler(object):
 
             self.buf.append(self.visitVar(val, code.escape))
         else:
-            self.buf.append('{%% %s %%}'%code.val)
+            self.buf.append('{%% %s %%}' % code.val)
 
         if code.block:
             # if not code.buffer: self.buf.append('{')
@@ -287,68 +300,68 @@ class Compiler(object):
             # if not code.buffer: self.buf.append('}')
 
             if not code.buffer:
-              codeTag = code.val.strip().split(' ',1)[0]
+              codeTag = code.val.strip().split(' ', 1)[0]
               if codeTag in self.autocloseCode:
-                  self.buf.append('{%% end%s %%}'%codeTag)
+                  self.buf.append('{%% end%s %%}' % codeTag)
 
     def visitEach(self,each):
-        self.buf.append('{%% for %s in %s|__pyjade_iter:%d %%}'%(','.join(each.keys),each.obj,len(each.keys)))
+        self.buf.append('{%% for %s in %s|__pyjade_iter:%d %%}' % (','.join(each.keys), each.obj, len(each.keys)))
         self.visit(each.block)
         self.buf.append('{% endfor %}')
 
     def attributes(self,attrs):
         return "%s__pyjade_attrs(%s)%s" % (self.variable_start_string, attrs, self.variable_end_string)
 
-    def visitDynamicAttributes(self,attrs):
-        buf,classes,params = [],[],{}
+    def visitDynamicAttributes(self, attrs):
+        buf, classes, params = [], [], {}
         terse='terse=True' if self.terse else ''
         for attr in attrs:
             if attr['name'] == 'class':
-                classes.append('(%s)'%attr['val'])
+                classes.append('(%s)' % attr['val'])
             else:
-                pair = "('%s',(%s))"%(attr['name'],attr['val'])
+                pair = "('%s',(%s))" % (attr['name'], attr['val'])
                 buf.append(pair)
 
         if classes:
             classes = " , ".join(classes)
-            buf.append("('class', (%s))"%classes)
+            buf.append("('class', (%s))" % classes)
 
         buf = ', '.join(buf)
         if self.terse: params['terse'] = 'True'
-        if buf: params['attrs'] = '[%s]'%buf
-        param_string = ', '.join(['%s=%s'%(n,v) for n,v in six.iteritems(params)])
+        if buf: params['attrs'] = '[%s]' % buf
+        param_string = ', '.join(['%s=%s' % (n, v) for n, v in six.iteritems(params)])
         if buf or terse:
             self.buf.append(self.attributes(param_string))
 
-    def visitAttributes(self,attrs):
+    def visitAttributes(self, attrs):
         temp_attrs = []
         for attr in attrs:
-            if (not self.useRuntime  and not attr['name']=='class') or attr['static']: #
+            if (not self.useRuntime and not attr['name']=='class') or attr['static']: #
                 if temp_attrs:
                     self.visitDynamicAttributes(temp_attrs)
                     temp_attrs = []
-                n,v = attr['name'], attr['val']
-                if isinstance(v,six.string_types):
+                n, v = attr['name'], attr['val']
+                if isinstance(v, six.string_types):
                     if self.useRuntime or attr['static']:
-                        self.buf.append(' %s=%s'%(n,v))
+                        self.buf.append(' %s=%s' % (n, v))
                     else:
-                        self.buf.append(' %s="%s"'%(n,self.visitVar(v)))
+                        self.buf.append(' %s="%s"' % (n, self.visitVar(v)))
                 elif v is True:
                     if self.terse:
-                        self.buf.append(' %s'%(n))
+                        self.buf.append(' %s' % (n,))
                     else:
-                        self.buf.append(' %s="%s"'%(n,n))
+                        self.buf.append(' %s="%s"' % (n, n))
             else:
                 temp_attrs.append(attr)
 
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
 
     @classmethod
-    def register_filter(cls,name,f):
+    def register_filter(cls, name, f):
         cls.filters[name] = f
 
     @classmethod
-    def register_autoclosecode(cls,name):
+    def register_autoclosecode(cls, name):
         cls.autocloseCode.append(name)
 
 

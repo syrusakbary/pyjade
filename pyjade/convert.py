@@ -30,7 +30,8 @@ def convert_file():
                     help=("COMPILER must be one of %s, default is %s" %
                           (','.join(list(available_compilers.keys())), default_compiler)))
     parser.add_option("-e", "--ext", dest="extension",
-                    help="Set import/extends default file extension", metavar="FILE")
+                      help="Set import/extends default file extension",
+                      metavar="FILE")
 
     options, args = parser.parse_args()
     if len(args) < 1:
@@ -40,7 +41,7 @@ def convert_file():
     compiler = options.compiler
 
     if options.extension:
-        extension = '.%s'%options.extension
+        extension = '.%s' % options.extension
     elif options.output:
         extension = os.path.splitext(options.output)[1]
     else:
@@ -48,7 +49,8 @@ def convert_file():
 
     if compiler in available_compilers:
         template = codecs.open(args[0], 'r', encoding='utf-8').read()
-        output = process(template, compiler=available_compilers[compiler], staticAttrs=True, extension=extension)
+        output = process(template, compiler=available_compilers[compiler],
+                         staticAttrs=True, extension=extension)
         if file_output:
             outfile = codecs.open(file_output, 'w', encoding='utf-8')
             outfile.write(output)
