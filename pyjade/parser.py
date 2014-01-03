@@ -15,7 +15,7 @@ class Parser(object):
         self.contexts = [self]
         self.extending = False
         self._spaces = None
-    
+
     def context(self,parser):
         if parser: self.context.append(parser)
         else: self.contexts.pop()
@@ -124,12 +124,12 @@ class Parser(object):
 
     def parseComment(self):
         tok = self.expect('comment')
-        
+
         if 'indent'==self.peek().type:
             node = nodes.BlockComment(tok.val, self.block(), tok.buffer)
         else:
             node = nodes.Comment(tok.val,tok.buffer)
-        
+
         node.line = self.line()
         return node
 
@@ -153,7 +153,7 @@ class Parser(object):
     def parseASTFilter(self):
         tok = self.expect('tag')
         attrs = self.accept('attrs')
-        
+
         self.expect(':')
         block = self.block()
 
@@ -216,9 +216,11 @@ class Parser(object):
         path = self.expect('include').val.strip()
         return nodes.Include(path)
 
-    def parseTextBlock(self):
+    def parseTextBlock(self, tag=None):
         text = nodes.Text()
         text.line = self.line()
+        if (tag):
+            text.parent == tag
         spaces = self.expect('indent').val
         if not self._spaces: self._spaces = spaces
         indent = ' '*(spaces-self._spaces)
@@ -303,7 +305,7 @@ class Parser(object):
             tag.block.append(self.parseExpr())
 
         while 'newline' == self.peek().type: self.advance()
-        
+
         tag.textOnly = tag.textOnly or tag.name in textOnly
 
         if 'script'== tag.name:
@@ -313,7 +315,7 @@ class Parser(object):
         if 'indent' == self.peek().type:
             if tag.textOnly:
                 self.lexer.pipeless = True
-                tag.block = self.parseTextBlock()
+                tag.block = self.parseTextBlock(tag)
                 self.lexer.pipeless = False
             else:
                 block = self.block()

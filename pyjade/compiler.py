@@ -217,12 +217,16 @@ class Compiler(object):
         return self.RE_INTERPOLATE.sub(lambda matchobj:repl(matchobj.group(3)),
                                        attr)
 
-    def interpolate(self,text):
-        return self._interpolate(text, lambda x:'%s%s|escape%s' % (self.variable_start_string, x, self.variable_end_string))
+    def interpolate(self,text, escape=True):
+        if escape:
+            return self._interpolate(text,lambda x:'%s%s|escape%s' % (self.variable_start_string, x, self.variable_end_string))
+        return self._interpolate(text,lambda x:'%s%s%s' % (self.variable_start_string, x, self.variable_end_string))
+
 
     def visitText(self,text):
+        script = text.parent and text.parent.name == 'script'
         text = ''.join(text.nodes)
-        text = self.interpolate(text)
+        text = self.interpolate(text, script)
         self.buffer(text)
         if self.pp:
             self.buffer('\n')
