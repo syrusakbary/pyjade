@@ -104,7 +104,7 @@ Syntax
 ======
 
 Exactly the same as the Jade Node.js module (except of cases, which are not implemented)
-https://github.com/visionmedia/jade/blob/master/Readme.md
+https://github.com/visionmedia/jade/blob/master/README.md
 
 
 Example
