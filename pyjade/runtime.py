@@ -88,13 +88,18 @@ def iteration(obj, num_keys):
     if is_mapping(obj):
         return obj
 
-    head = next(iter(obj), None)
+    iter_obj = iter(obj)
+    head = next(iter_obj, None)
     if head:
         try:
             if not isinstance(head, six.string_types):
                 card = len(head)
                 if num_keys == card:
-                    return obj
+                    if id(obj) == id(iter_obj):
+                        # preserve the head item of one-off iterators
+                        return itertools.chain([head], obj)
+                    else:
+                        return obj
                 if num_keys == card + 1:
                     return [list(value) + [index] for index, value in enumerate(obj)]
         except Exception:
