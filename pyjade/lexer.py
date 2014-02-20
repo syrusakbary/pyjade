@@ -310,14 +310,15 @@ class Lexer(object):
             tok.attrs = odict()
             tok.static_attrs = set()
             str_nums = list(map(str, range(10)))
-
+            # print '------'
             def parse(c):
                 real = c
                 if colons and ':' == c:
                     c = '='
                 ns.literal = ns.literal and (state() not in ('object', 'array',
                                                              'expr'))
-                if c in (',', '\n'):
+                # print ns, c, states
+                if c in (',', '\n') or (c == ' ' and state() == 'val' and len(states) == 2 and ns.val.strip()):
                     s = state()
                     if s in ('expr', 'array', 'string', 'object'):
                         ns.val += c
