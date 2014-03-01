@@ -9,7 +9,7 @@ from pyjade.utils import process
 from django.conf import settings
 
 class Compiler(_Compiler):
-    autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress'.split(',')
+    autocloseCode = 'if,ifchanged,ifequal,ifnotequal,for,block,filter,autoescape,with,trans,blocktrans,spaceless,comment,cache,localize,compress,verbatim'.split(',')
     useRuntime = True
 
     def __init__(self, node, **options):
