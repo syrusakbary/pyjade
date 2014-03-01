@@ -15,7 +15,7 @@ class Compiler(_Compiler):
     def compile_top(self):
         return '# -*- coding: utf-8 -*-\n<%%! from pyjade.runtime import attrs as %s, iteration as %s\nfrom mako.runtime import Undefined %%>' % (ATTRS_FUNC,ITER_FUNC)
 
-    def interpolate(self,text):
+    def interpolate(self, text, escape=True):
         return self._interpolate(text,lambda x:'${%s}'%x)
 
     def visitCodeBlock(self,block):
