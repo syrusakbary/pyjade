@@ -108,5 +108,5 @@ class Compiler(_Compiler):
               self.visitConditional(next)
         if conditional.type in ['if','unless']: self.buf.append('\n<% } %>\n')
         
-    def interpolate(self,text):
+    def interpolate(self, text, escape=True):
         return self._interpolate(text,lambda x:'<%%= %s %%>'%x)

@@ -67,7 +67,7 @@ class HTMLCompiler(pyjade.compiler.Compiler):
                 self.visitBlock(mixin.block)
         return _mixin
 
-    def interpolate(self,text):
+    def interpolate(self, text, escape=True):
         return self._interpolate(text, lambda x: str(self._do_eval(x)))
 
     def visitInclude(self, node):
