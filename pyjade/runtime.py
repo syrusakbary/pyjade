@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from .utils import odict
 import types
 import six
+from itertools import chain
 
 try:
     from collections import Mapping as MappingType
@@ -61,8 +62,29 @@ def attrs (attrs=[],terse=False, undefined=None):
                 buf.append(u'%s'%k if terse and t else u'%s="%s"'%(k,escape(v)))
     return u' '.join(buf)
 
+
 def is_mapping(value):
     return isinstance(value, MappingType)
+
+
+def is_iterable(ob):
+    if isinstance(ob, six.string_types):
+        return False
+    try:
+        iter(ob)
+        return True
+    except TypeError:
+        return False
+
+
+def get_cardinality(ob):
+    if isinstance(ob, six.string_types):
+        return 1
+    try:
+        return len(ob)
+    except TypeError:
+        return 1
+
 
 def iteration(obj, num_keys):
     """
@@ -85,26 +107,29 @@ def iteration(obj, num_keys):
          b. otherwise return a list of (value,index) tuples
 
     """
+
+    # If the object is a mapping type, return it as-is
     if is_mapping(obj):
         return obj
 
-    iter_obj = iter(obj)
-    head = next(iter_obj, None)
-    if head:
-        try:
-            if not isinstance(head, six.string_types):
-                card = len(head)
-                if num_keys == card:
-                    if id(obj) == id(iter_obj):
-                        # preserve the head item of one-off iterators
-                        return itertools.chain([head], obj)
-                    else:
-                        return obj
-                if num_keys == card + 1:
-                    return [list(value) + [index] for index, value in enumerate(obj)]
-        except Exception:
-            # Not iterable
-            pass
+    _marker = []
 
-    # Empty list, or other unknown case
-    return obj if num_keys == 1 else [(value,index) for index, value in enumerate(obj)]
+    iter_obj = iter(obj)
+    head = next(iter_obj, _marker)
+    iter_obj = chain([head], iter_obj)
+
+    if head is _marker:
+        # Empty list
+        return []
+
+    if is_iterable(head):
+        if num_keys == get_cardinality(head) + 1:
+            return (tuple(item) + (ix,) for ix, item in enumerate(iter_obj))
+        else:
+            return iter_obj
+
+    elif num_keys == 2:
+        return ((item, ix) for ix, item in enumerate(iter_obj))
+
+    else:
+        return iter_obj
