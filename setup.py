@@ -1,7 +1,7 @@
 from setuptools import setup,find_packages
 
 setup(name='pyjade',
-      version='2.1.0',
+      version='2.2.0',
       download_url='git@github.com:syrusakbary/pyjade.git',
       packages=find_packages(),
       author='Syrus Akbary',
