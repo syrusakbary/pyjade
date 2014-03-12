@@ -52,6 +52,7 @@ class Compiler(_Compiler):
     def visitInclude(self,node):
         path = self.format_path(node.path)
         self.buffer('<%%include file="%s"/>'%(path))
+        self.buffer('<%%namespace file="%s" import="*"/>'%(path))
 
 
     def visitConditional(self,conditional):
