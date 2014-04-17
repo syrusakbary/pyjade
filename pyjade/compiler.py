@@ -48,7 +48,7 @@ class Compiler(object):
       , 'br'
       , 'hr'
     ]
-    autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress'.split(',')
+    autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,raw'.split(',')
 
     filters = {}
 
