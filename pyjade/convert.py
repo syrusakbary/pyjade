@@ -6,7 +6,7 @@ from pyjade.utils import process
 import os
 
 def convert_file():
-    support_compilers_list = ['django', 'jinja', 'underscore', 'mako', 'tornado']
+    support_compilers_list = ['django', 'jinja', 'underscore', 'mako', 'tornado', 'html']
     available_compilers = {}
     for i in support_compilers_list:
         try:
@@ -28,7 +28,7 @@ def convert_file():
                     default=default_compiler,
                     type="choice",
                     help=("COMPILER must be one of %s, default is %s" %
-                          (','.join(list(available_compilers.keys())), default_compiler)))
+                          (', '.join(list(available_compilers.keys())), default_compiler)))
     parser.add_option("-e", "--ext", dest="extension",
                       help="Set import/extends default file extension",
                       metavar="FILE")

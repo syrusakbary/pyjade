@@ -33,7 +33,7 @@ def local_context_manager(compiler, local_context):
     compiler.local_context = old_local_context
 
 
-class HTMLCompiler(pyjade.compiler.Compiler):
+class Compiler(pyjade.compiler.Compiler):
     global_context = dict()
     local_context = dict()
     mixins = dict()
@@ -156,8 +156,10 @@ class HTMLCompiler(pyjade.compiler.Compiler):
         if params:
             self.buf.append(" "+" ".join([process_param(k, v, self.terse) for (k,v) in params]))
 
+HTMLCompiler = Compiler
+
 def process_jade(src):
     parser = pyjade.parser.Parser(src)
     block = parser.parse()
-    compiler = HTMLCompiler(block, pretty=True)
+    compiler = Compiler(block, pretty=True)
     return compiler.compile()
