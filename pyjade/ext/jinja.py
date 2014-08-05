@@ -4,6 +4,7 @@ import pyjade.runtime
 
 from pyjade import Compiler as _Compiler
 from pyjade.runtime import attrs as _attrs, iteration
+from jinja2 import Markup
 from jinja2.runtime import Undefined
 from pyjade.utils import process
 
@@ -11,7 +12,7 @@ ATTRS_FUNC = '__pyjade_attrs'
 ITER_FUNC = '__pyjade_iter'
 
 def attrs(attrs, terse=False):
-    return _attrs(attrs, terse, Undefined)
+    return Markup(_attrs(attrs, terse, Undefined))
 
 class Compiler(_Compiler):
 
