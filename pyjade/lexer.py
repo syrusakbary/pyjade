@@ -38,7 +38,7 @@ class Lexer(object):
     RE_INCLUDE = re.compile(r'^include +([^\n]+)')
     RE_ASSIGNMENT = re.compile(r'^(-\s+var\s+)?(\w+) += *([^;\n]+)( *;? *)')
     RE_MIXIN = re.compile(r'^mixin +([-\w]+)(?: *\((.*)\))?')
-    RE_CALL = re.compile(r'^\+([-\w]+)(?: *\((.*)\))?')
+    RE_CALL = re.compile(r'^\+\s*([-.\w]+)(?: *\((.*)\))?')
     RE_CONDITIONAL = re.compile(r'^(?:- *)?(if|unless|else if|elif|else)\b([^\n]*)')
     RE_BLANK = re.compile(r'^\n *\n')
     # RE_WHILE = re.compile(r'^while +([^\n]+)')
