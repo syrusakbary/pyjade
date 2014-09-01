@@ -38,7 +38,7 @@ class Parser(object):
     def lookahead(self,n):
         return self.lexer.lookahead(n)
 
-    def parse (self):
+    def parse(self):
         block = nodes.Block()
         parser = None
         block.line = self.line()
@@ -75,8 +75,10 @@ class Parser(object):
             return block
         elif t in ('id','class'):
             tok = self.advance()
-            self.lexer.defer(self.lexer.tok('tag','div'))
-            self.lexer.defer(tok)
+            new_div = self.lexer.tok('tag','div')
+            new_div.inline_level = tok.inline_level
+            self.lexer.stash.append(new_div)
+            self.lexer.stash.append(tok)
             return self.parseExpr()
 
         funcName = 'parse%s'%t.capitalize()
@@ -88,7 +90,7 @@ class Parser(object):
 
     def parseString(self):
         tok = self.expect('string')
-        node = nodes.String(tok.val)
+        node = nodes.String(tok.val, inline=tok.inline_level > 0)
         node.line = self.line()
         return node
 
@@ -252,15 +254,40 @@ class Parser(object):
         self.expect('outdent')
         return block
 
+    def processInline(self, current_tag, current_level):
+        next_level = current_level + 1
+        while self.peek().inline_level == next_level:
+            current_tag.block.append(self.parseExpr())
+
+        if self.peek().inline_level > next_level:
+            self.processInline(current_tag, next_level)
+
+    def processTagText(self, tag):
+        if self.peek().inline_level < tag.inline_level:
+            return
+
+        if not self.lookahead(2).inline_level > tag.inline_level:
+            tag.text = self.parseText()
+            return
+
+        while self.peek().inline_level == tag.inline_level and self.peek().type == 'string':
+            tag.block.append(self.parseExpr())
+
+            if self.peek().inline_level > tag.inline_level:
+                self.processInline(tag, tag.inline_level)
+
     def parseTag(self):
         i = 2
         if 'attrs'==self.lookahead(i).type: i += 1
+
         if ':'==self.lookahead(i).type:
             if 'indent' == self.lookahead(i+1).type:
-                return self.parseASTFilter
+                raise Exception('unexpected token "indent" in file %s on line %d' %
+                                (self.filename, self.line()))
 
-        name = self.advance().val
-        tag = nodes.Tag(name)
+        tok = self.advance()
+        tag = nodes.Tag(tok.val)
+        tag.inline_level = tok.inline_level
         dot = None
 
         tag.line = self.line()
@@ -271,14 +298,6 @@ class Parser(object):
                 tok = self.advance()
                 tag.setAttribute(tok.type,'"%s"'%tok.val,True)
                 continue
-            # if t=='id':
-            #     tok = self.advance()
-            #     tag.setId(tok.val)
-            #     continue
-            # elif t=='class':
-            #     tok = self.advance()
-            #     tag.addClass(tok.val)
-            #     continue
             elif 'attrs'==t:
                 tok = self.advance()
                 for n,v in six.iteritems(tok.attrs):
@@ -291,18 +310,18 @@ class Parser(object):
         if '.'== v:
             dot = tag.textOnly = True
             self.advance()
-        elif '<'== v: #For inline elements
+        elif '<'== v:  # For inline elements
             tag.inline = True
             self.advance()
 
         t = self.peek().type
-        if 'string'==t: tag.text = self.parseString()
-        elif 'text'==t: tag.text = self.parseText()
-        elif 'code'==t: tag.code = self.parseCode()
+        if 'code'==t: tag.code = self.parseCode()
         elif ':'==t:
             self.advance()
             tag.block = nodes.Block()
             tag.block.append(self.parseExpr())
+        elif 'string'==t: self.processTagText(tag)
+        elif 'text'==t: tag.text = self.parseText()
 
         while 'newline' == self.peek().type: self.advance()
 

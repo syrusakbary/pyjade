@@ -232,10 +232,11 @@ class Compiler(object):
             self.buffer('\n')
 
     def visitString(self,text):
+        instring = not text.inline
         text = ''.join(text.nodes)
         text = self.interpolate(text)
         self.buffer(text)
-        self.instring = True
+        self.instring = instring
 
     def visitComment(self,comment):
         if not comment.buffer: return
