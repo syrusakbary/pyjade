@@ -20,10 +20,44 @@ def regexec(regex, input):
     return None
 
 
+def detect_closing_bracket(string):
+    count = 0
+    pos = string.find('[')
+    while True:
+        if string[pos] == '[':
+            count += 1
+        if string[pos] == ']':
+            count -= 1
+        pos += 1
+        if count == 0:
+            return pos
+
+
+def replace_string_brackets(splitted_string):
+    sval_replaced = []
+    old_delim = None
+    for i in splitted_string:
+        if old_delim is None:
+            sval_replaced.append(i)
+            if i in ('"', "'"):
+                old_delim = i
+            continue
+
+        if i in ('"', "'"):
+            if i == old_delim:
+                old_delim = None
+            sval_replaced.append(i)
+            continue
+
+        sval_replaced.append(re.sub(r'\[|\]', '*', i))
+    return ''.join(sval_replaced)
+
+
 class Lexer(object):
     RE_INPUT = re.compile(r'\r\n|\r')
     RE_COMMENT = re.compile(r'^ *\/\/(-)?([^\n]*)')
     RE_TAG = re.compile(r'^(\w[-:\w]*)')
+    RE_DOT_BLOCK_START = re.compile(r'^\.\n')
     RE_FILTER = re.compile(r'^:(\w+)')
     RE_DOCTYPE = re.compile(r'^(?:!!!|doctype) *([^\n]+)?')
     RE_ID = re.compile(r'^#([\w-]+)')
@@ -49,7 +83,9 @@ class Lexer(object):
     RE_INDENT_TABS = re.compile(r'^\n(\t*) *')
     RE_INDENT_SPACES = re.compile(r'^\n( *)')
     RE_COLON = re.compile(r'^: *')
-    # RE_ = re.compile(r'')
+    RE_INLINE = re.compile(r'(?<!\\)#\[')
+    RE_INLINE_ESCAPE = re.compile(r'\\#\[')
+    STRING_SPLITS = re.compile(r'([\'"])(.*?)(?<!\\)(\1)')
 
     def __init__(self, string, **options):
         if isinstance(string, six.binary_type):
@@ -64,9 +100,10 @@ class Lexer(object):
         self.indentStack = deque()
         self.indentRe = None
         self.pipeless = False
+        self.isTextBlock = False
 
     def tok(self, type, val=None):
-        return Token(type=type, line=self.lineno, val=val)
+        return Token(type=type, line=self.lineno, val=val, inline_level=self.options.get('inline_level', 0))
 
     def consume(self, len):
         self.input = self.input[len:]
@@ -124,12 +161,19 @@ class Lexer(object):
         else:
             return self.tok('eos')
 
+    def consumeBlank(self):
+        captures = regexec(self.RE_BLANK, self.input)
+        if not captures:
+            return
+
+        self.lineno += 1
+        self.consume(len(captures[0]) - 1)
+        return captures
+
     def blank(self):
         if self.pipeless:
             return
-        captures = regexec(self.RE_BLANK, self.input)
-        if captures:
-            self.consume(len(captures[0]) - 1)
+        if self.consumeBlank():
             return self.next()
 
     def comment(self):
@@ -156,6 +200,81 @@ class Lexer(object):
                 tok = self.tok('tag', name)
             return tok
 
+    def textBlockStart(self):
+        captures = regexec(self.RE_DOT_BLOCK_START, self.input)
+        if captures is None:
+            return
+
+        if len(self.indentStack) > 0:
+            self.textBlockTagIndent = self.indentStack[0]
+        else:
+            self.textBlockTagIndent = 0
+
+        self.consume(1)
+        self.isTextBlock = True
+        return self.textBlockContinue(isStart=True)
+
+    def textBlockContinue(self, isStart=False):
+        if not self.isTextBlock:
+            return
+
+        tokens = deque()
+        while True:
+            if self.consumeBlank():
+                if not isStart:
+                    tokens.append(self.tok('string', ''))
+                continue
+
+            eos = self.eos()
+            if eos is not None:
+                if isStart:
+                    return eos
+                tokens.append(eos)
+                break
+
+            nextIndent = self.captureIndent()
+            if nextIndent is None or len(nextIndent[1]) <= self.textBlockTagIndent:
+                self.isTextBlock = False
+                if isStart:
+                    return self.tok('newline')
+                break
+
+            padding = 0
+            if not isStart and len(nextIndent[1]) > self.textBlockIndent:
+                padding = len(nextIndent[1]) - self.textBlockIndent
+                self.consume(1 + padding)
+                self.input = '\n' + self.input
+
+            indent = self.indent()
+            if isStart:
+                self.textBlockIndent = indent.val
+                padding = 0
+
+            itoks = self.scanInline(self.RE_TEXT, 'string')
+            indentChar = self.indentRe == self.RE_INDENT_TABS and '\t' or ' '
+            if itoks:
+                itoks[0].val = (indentChar * padding) + itoks[0].val
+
+            if isStart:
+                for tok in itoks or []:
+                    self.defer(tok)
+                return indent
+
+            tokens.extend(itoks)
+
+        if not tokens:
+            firstTok = None
+        else:
+            firstTok = tokens.popleft()
+            while tokens:
+                if tokens[-1].type == 'string' and not tokens[-1].val:
+                    tokens.pop()
+                    continue
+                self.defer(tokens.popleft())
+
+        self.isTextBlock = False
+        return firstTok
+
     def filter(self):
         return self.scan(self.RE_FILTER, 'filter')
 
@@ -169,11 +288,72 @@ class Lexer(object):
     def className(self):
         return self.scan(self.RE_CLASS, 'class')
 
+    def processInline(self, val):
+        sval = self.STRING_SPLITS.split(val)
+        sval_stripped = [i.strip() for i in sval]
+
+        if sval_stripped.count('"') % 2 != 0 or sval_stripped.count("'") % 2 != 0:
+            raise Exception('Unbalanced quotes found inside inline jade at line %s.' % self.lineno)
+
+        sval_replaced = replace_string_brackets(sval)
+        start_inline = self.RE_INLINE.search(sval_replaced).start()
+
+        try:
+            closing = start_inline + detect_closing_bracket(sval_replaced[start_inline:])
+        except IndexError:
+            raise Exception('The end of the string was reached with no closing bracket found at line %s.' % self.lineno)
+
+        textl = val[:start_inline]
+        code = val[start_inline:closing][2:-1]
+        textr = val[closing:]
+
+        toks = deque()
+
+        toks.append(self.tok('string', self.RE_INLINE_ESCAPE.sub('#[', textl)))
+
+        ilexer = InlineLexer(code, inline_level=self.options.get('inline_level', 0) + 1)
+        while True:
+            tok = ilexer.advance()
+            if tok.type == 'eos':
+                break
+            toks.append(tok)
+
+        if self.RE_INLINE.search(textr):
+            toks.extend(self.processInline(textr))
+        else:
+            toks.append(self.tok('string', self.RE_INLINE_ESCAPE.sub('#[', textr)))
+
+        return toks
+
+    def scanInline(self, regexp, type):
+        ret = self.scan(regexp, type)
+        if ret is None:
+            return ret
+
+        if self.RE_INLINE.search(ret.val):
+            ret = self.processInline(ret.val)
+            if ret:
+                ret[0].val = ret[0].val.lstrip()
+        else:
+            ret.val = self.RE_INLINE_ESCAPE.sub('#[', ret.val)
+            ret = deque([ret])
+        return ret
+
+    def scanInlineProcess(self, regexp, type_):
+        toks = self.scanInline(regexp, type_)
+        if not toks:
+            return None
+
+        firstTok = toks.popleft()
+        for tok in toks:
+            self.defer(tok)
+        return firstTok
+
     def string(self):
-        return self.scan(self.RE_STRING, 'string')
+        return self.scanInlineProcess(self.RE_STRING, 'string')
 
     def text(self):
-        return self.scan(self.RE_TEXT, 'text')
+        return self.scanInlineProcess(self.RE_TEXT, 'text')
 
     def extends(self):
         return self.scan(self.RE_EXTENDS, 'extends')
@@ -270,7 +450,7 @@ class Lexer(object):
             tok = self.tok('code', name)
             tok.escape = flags.startswith('=')
             #print captures
-            tok.buffer = '=' in flags 
+            tok.buffer = '=' in flags
             # print tok.buffer
             return tok
 
@@ -406,7 +586,7 @@ class Lexer(object):
 
             return tok
 
-    def indent(self):
+    def captureIndent(self):
         if self.indentRe:
             captures = regexec(self.indentRe, self.input)
         else:
@@ -417,6 +597,10 @@ class Lexer(object):
                 captures = regexec(regex, self.input)
             if captures and captures[1]:
                 self.indentRe = regex
+        return captures
+
+    def indent(self):
+        captures = self.captureIndent()
 
         if captures:
             indents = len(captures[1])
@@ -463,6 +647,7 @@ class Lexer(object):
 
     def next(self):
         return self.deferred() \
+            or self.textBlockContinue() \
             or self.blank() \
             or self.eos() \
             or self.pipelessText() \
@@ -479,6 +664,7 @@ class Lexer(object):
             or self.each() \
             or self.assignment() \
             or self.tag() \
+            or self.textBlockStart() \
             or self.filter() \
             or self.code() \
             or self.id() \
@@ -491,3 +677,22 @@ class Lexer(object):
             or self.text()
 
             ##or self._while() \
+
+
+class InlineLexer(Lexer):
+    def next(self):
+        return self.deferred() \
+            or self.blank() \
+            or self.eos() \
+            or self.pipelessText() \
+            or self.mixin() \
+            or self.call() \
+            or self.assignment() \
+            or self.tag() \
+            or self.code() \
+            or self.id() \
+            or self.className() \
+            or self.attrs() \
+            or self.colon() \
+            or self.string() \
+            or self.text()
