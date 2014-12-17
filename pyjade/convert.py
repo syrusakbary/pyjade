@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 import logging
 import codecs
 from optparse import OptionParser
@@ -16,7 +17,7 @@ def convert_file():
         else:
             available_compilers[i] = compiler_class
 
-    usage = "usage: %prog [options] file [output]"
+    usage = "usage: %prog [options] [file [output]]"
     parser = OptionParser(usage)
     parser.add_option("-o", "--output", dest="output",
                     help="Write output to FILE", metavar="FILE")
@@ -34,9 +35,7 @@ def convert_file():
                       metavar="FILE")
 
     options, args = parser.parse_args()
-    if len(args) < 1:
-        print("Specify the input file as the first argument.")
-        exit()
+
     file_output = options.output or (args[1] if len(args) > 1 else None)
     compiler = options.compiler
 
@@ -48,7 +47,10 @@ def convert_file():
         extension = None
 
     if compiler in available_compilers:
-        template = codecs.open(args[0], 'r', encoding='utf-8').read()
+        if len(args) >= 1:
+            template = codecs.open(args[0], 'r', encoding='utf-8').read()
+        else:
+            template = sys.stdin.read()
         output = process(template, compiler=available_compilers[compiler],
                          staticAttrs=True, extension=extension)
         if file_output:
