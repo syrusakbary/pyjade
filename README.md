@@ -14,6 +14,11 @@ To simply output the conversion to your console:
 pyjade [-c django|jinja|mako|tornado] input.jade [output.html]
 ```
 
+or, alternatively:
+
+```console
+pyjade [-c django|jinja|mako|tornado] [-o output.html] < input.jade
+```
 
 INSTALLATION
 ============
