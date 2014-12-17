@@ -57,7 +57,7 @@ def convert_file():
             outfile = codecs.open(file_output, 'w', encoding='utf-8')
             outfile.write(output)
         else:
-            print(output)
+            codecs.getwriter('utf-8')(sys.stdout).write(output)
     else:
         raise Exception('You must have %s installed!' % compiler)
 
