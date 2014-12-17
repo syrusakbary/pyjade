@@ -50,7 +50,7 @@ def convert_file():
         if len(args) >= 1:
             template = codecs.open(args[0], 'r', encoding='utf-8').read()
         else:
-            template = sys.stdin.read()
+            template = codecs.getreader('utf-8')(sys.stdin).read()
         output = process(template, compiler=available_compilers[compiler],
                          staticAttrs=True, extension=extension)
         if file_output:
