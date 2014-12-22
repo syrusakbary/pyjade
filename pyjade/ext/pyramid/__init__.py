@@ -6,6 +6,8 @@ try:
     is_pyramid_mako = True
 except ImportError:
     from pyramid import mako_templating
+    is_pyramid_mako = False
+
 
 class PyjadeRenderer(object):
     """
