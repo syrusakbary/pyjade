@@ -234,9 +234,8 @@ class Compiler(object):
         return self.RE_INTERPOLATE.sub(repl, text)
 
     def visitText(self,text):
-        script = text.parent and text.parent.name == 'script'
         text = ''.join(text.nodes)
-        text = self.interpolate(text, script)
+        text = self.interpolate(text)
         self.buffer(text)
         if self.pp:
             self.buffer('\n')
