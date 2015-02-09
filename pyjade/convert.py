@@ -50,14 +50,14 @@ def convert_file():
         if len(args) >= 1:
             template = codecs.open(args[0], 'r', encoding='utf-8').read()
         else:
-            template = codecs.getreader('utf-8')(sys.stdin).read()
+            template = codecs.getreader('utf-8')(getattr(sys.stdin, 'buffer', sys.stdin)).read()
         output = process(template, compiler=available_compilers[compiler],
                          staticAttrs=True, extension=extension)
         if file_output:
             outfile = codecs.open(file_output, 'w', encoding='utf-8')
             outfile.write(output)
         else:
-            codecs.getwriter('utf-8')(sys.stdout).write(output)
+            codecs.getwriter('utf-8')(getattr(sys.stdout, 'buffer', sys.stdout)).write(output)
     else:
         raise Exception('You must have %s installed!' % compiler)
 
