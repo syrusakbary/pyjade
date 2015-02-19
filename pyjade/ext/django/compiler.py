@@ -59,8 +59,11 @@ class Compiler(_Compiler):
         return "{%% __pyjade_attrs %s %%}"%attrs
 
 
-from django import template
-template.add_to_builtins('pyjade.ext.django.templatetags')
+try:
+ from django.template.base import add_to_builtins
+except ImportError: # Django < 1.8
+ from django.template import add_to_builtins
+add_to_builtins('pyjade.ext.django.templatetags')
 
 from django.utils.translation import trans_real
 

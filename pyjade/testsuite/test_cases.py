@@ -72,6 +72,9 @@ try:
         )),
         )
     )
+    import django
+    if django.VERSION >= (1, 7, 0):
+        django.setup()
     import django.template
     import django.template.loader
     from pyjade.ext.django import Compiler as DjangoCompiler
