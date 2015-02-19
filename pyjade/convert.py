@@ -47,8 +47,11 @@ def convert_file():
         extension = None
 
     if compiler in available_compilers:
+        import six
         if len(args) >= 1:
             template = codecs.open(args[0], 'r', encoding='utf-8').read()
+        elif six.PY3:
+            template = sys.stdin.read()
         else:
             template = codecs.getreader('utf-8')(sys.stdin).read()
         output = process(template, compiler=available_compilers[compiler],
@@ -56,6 +59,8 @@ def convert_file():
         if file_output:
             outfile = codecs.open(file_output, 'w', encoding='utf-8')
             outfile.write(output)
+        elif six.PY3:
+            sys.stdout.write(output)
         else:
             codecs.getwriter('utf-8')(sys.stdout).write(output)
     else:
