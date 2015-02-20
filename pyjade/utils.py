@@ -190,7 +190,7 @@ class odict(dict):
         elif args:
             raise TypeError('expected at most one positional argument')
         if kwargs:
-            sources.append(kwargs.iteritems())
+            sources.append(six.iteritems(kwargs))
         for iterable in sources:
             for key, val in iterable:
                 self[key] = val

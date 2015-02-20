@@ -42,7 +42,7 @@ class Evaluator(template.Node):
     context['false'] = False
     context['true'] = True
     try:
-        return unicode(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
+        return six.text_type(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
     except NameError:
         return ''
 
