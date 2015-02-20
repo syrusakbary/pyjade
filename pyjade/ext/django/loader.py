@@ -1,8 +1,14 @@
 from __future__ import absolute_import
 import hashlib
 
-from django.template.base import TemplateDoesNotExist
-from django.template.loader import BaseLoader, get_template_from_string, find_template_loader, make_origin
+from django.template.base import TemplateDoesNotExist, Template
+from django.template.loader import BaseLoader
+try:
+    from django.template.engine import Engine
+    make_origin = Engine.get_default().make_origin
+    find_template_loader = Engine.get_default().find_template_loader
+except ImportError: # Django < 1.8
+    from django.template.loader import make_origin, find_template_loader
 import os
 
 from django.conf import settings
@@ -63,14 +69,14 @@ class Loader(BaseLoader):
                     source, display_name = self.load_template_source(template_name, template_dirs)
                     source=process(source,filename=template_name,compiler=Compiler)
                     origin = make_origin(display_name, self.load_template_source, template_name, template_dirs)
-                    template = get_template_from_string(source, origin, template_name)
+                    template = Template(source, origin, template_name)
                 except NotImplementedError:
                     template, origin = self.find_template(template_name, template_dirs)
             else:
                 template, origin = self.find_template(template_name, template_dirs)
             if not hasattr(template, 'render'):
                 try:
-                    template = get_template_from_string(process(source,filename=template_name,compiler=Compiler), origin, template_name)
+                    template = Template(process(source,filename=template_name,compiler=Compiler), origin, template_name)
                 except (TemplateDoesNotExist, UnboundLocalError):
                     # If compiling the template we found raises TemplateDoesNotExist,
                     # back off to returning he source and display name for the template

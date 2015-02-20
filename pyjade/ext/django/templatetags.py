@@ -9,7 +9,10 @@ greater than and less than operators. Some common case examples::
 """
 import unittest
 from django import template
-from django.template import FilterExpression
+try:
+    from django.template.base import FilterExpression
+except ImportError: # Django < 1.8
+    from django.template import FilterExpression
 from django.template.loader import get_template
 import six
 
