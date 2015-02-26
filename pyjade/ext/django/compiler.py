@@ -75,7 +75,10 @@ except ImportError:
 def decorate_templatize(func):
     def templatize(src, origin=None):
         src = to_text(src, settings.FILE_CHARSET)
-        html = process(src,compiler=Compiler)
+        if origin.endswith(".jade"):
+            html = process(src,compiler=Compiler)
+        else:
+            html = src
         return func(html, origin)
 
     return templatize
