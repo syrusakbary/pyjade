@@ -3,6 +3,8 @@
 PyJade
 ======
 
+[![Join the chat at https://gitter.im/syrusakbary/pyjade](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/syrusakbary/pyjade?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 PyJade is a high performance port of Jade-lang for python, that converts any .jade source to the each Template-language (Django, Jinja2, Mako or Tornado).
 
 
