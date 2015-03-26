@@ -5,6 +5,10 @@ from django.template.base import TemplateDoesNotExist, Template
 from django.template.loader import BaseLoader
 try:
     from django.template.engine import Engine
+    from django.conf import settings
+    from django.core.exceptions import ImproperlyConfigured
+    try: settings.TEMPLATES
+    except ImproperlyConfigured: settings.configure()
     make_origin = Engine.get_default().make_origin
     find_template_loader = Engine.get_default().find_template_loader
 except ImportError: # Django < 1.8
