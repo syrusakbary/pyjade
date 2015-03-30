@@ -4,6 +4,7 @@ import six
 
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
+    RE_INLINE_CONDITIONAL = re.compile(r"^([\(\w][^\?]*)\s*\?\s*(.*)\s*:\s*(.*)\s*$")
     doctypes = {
         '5': '<!DOCTYPE html>'
       , 'xml': '<?xml version="1.0" encoding="utf-8" ?>'
@@ -327,8 +328,7 @@ class Compiler(object):
         return "%s__pyjade_attrs(%s)%s" % (self.variable_start_string, attrs, self.variable_end_string)
 
     def convertInlineConditionalToPython(self, attr):
-        pattern = re.compile(r"^([\(\w][^\?]*)\s*\?\s*(.*)\s*:\s*(.*)\s*$")
-        match = pattern.match(attr['val'])
+        match = self.RE_INLINE_CONDITIONAL.match(attr['val'])
         if match:
             condition = match.group(1).strip()
             condition = condition.replace('&&', ' and ').replace('||', ' or ')
