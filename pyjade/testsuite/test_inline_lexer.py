@@ -151,5 +151,6 @@ def process(jade):
 
 
 def test_lexer():
-    for k, v in expected_results.iteritems():
+    import six
+    for k, v in six.iteritems(expected_results):
         yield process, k
