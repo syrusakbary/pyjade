@@ -22,6 +22,20 @@ or, alternatively:
 pyjade [-c django|jinja|mako|tornado] [-o output.html] < input.jade
 ```
 
+To convert directly inside a python script:
+
+```
+import pyjade
+jade_text = '''!!! 5
+html
+head
+    body foo bar!
+'''
+print pyjade.simple_convert(jade_text)
+
+```
+
+
 INSTALLATION
 ============
 
