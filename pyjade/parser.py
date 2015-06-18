@@ -3,8 +3,6 @@ from .lexer import Lexer
 from . import nodes
 import six
 
-textOnly = ('script','style')
-
 class Parser(object):
     def __init__(self,str,filename=None,**options):
         self.input = str
@@ -324,12 +322,6 @@ class Parser(object):
         elif 'text'==t: tag.text = self.parseText()
 
         while 'newline' == self.peek().type: self.advance()
-
-        tag.textOnly = tag.textOnly or tag.name in textOnly
-
-        if 'script'== tag.name:
-            type = tag.getAttribute('type')
-            if not dot and type and 'text/javascript' !=type.strip('"\''): tag.textOnly = False
 
         if 'indent' == self.peek().type:
             if tag.textOnly:
