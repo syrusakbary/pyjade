@@ -265,6 +265,7 @@ class Compiler(object):
 
 
     def format_path(self,path):
+        path = path.strip("'\"")
         has_extension = os.path.basename(path).find('.') > -1
         if not has_extension:
             path += self.extension
