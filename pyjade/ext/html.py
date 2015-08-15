@@ -79,9 +79,14 @@ class Compiler(pyjade.compiler.Compiler):
         else:
             raise Exception("Include path '%s' doesn't exist" % node.path)
 
-        parser = pyjade.parser.Parser(src)
-        block = parser.parse()
-        self.visit(block)
+        if node.path.endswith(u'.jade') or u'.' not in node.path:
+            parser = pyjade.parser.Parser(src)
+            block = parser.parse()
+            self.visit(block)
+        else:
+            if src.endswith(u'\n'):
+                src = src[:-1]
+            self.buffer(src)
 
     def visitExtends(self, node):
         raise pyjade.exceptions.CurrentlyNotSupported()
