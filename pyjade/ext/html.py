@@ -72,19 +72,19 @@ class Compiler(pyjade.compiler.Compiler):
         return self._interpolate(text, lambda x: str(self._do_eval(x)))
 
     def visitInclude(self, node):
-        if os.path.exists(node.path):
-            src = open(node.path, 'r').read()
-        elif os.path.exists("%s.jade" % node.path):
-            src = open("%s.jade" % node.path, 'r').read()
-        else:
-            raise Exception("Include path '%s' doesn't exist" % node.path)
+        path = self.format_path(node.path)
 
-        if node.path.endswith(u'.jade') or u'.' not in node.path:
+        if os.path.exists(path):
+            src = open(path, 'r').read()
+        else:
+            raise Exception("Include path '%s' doesn't exist" % path)
+
+        if path.endswith('.jade'):
             parser = pyjade.parser.Parser(src)
             block = parser.parse()
             self.visit(block)
         else:
-            if src.endswith(u'\n'):
+            if src.endswith('\n'):
                 src = src[:-1]
             self.buffer(src)
 
