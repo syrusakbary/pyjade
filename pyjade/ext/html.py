@@ -6,6 +6,7 @@ import pyjade
 from pyjade.runtime import is_mapping, iteration, escape
 import six
 import os
+import operator 
 
 def process_param(key, value, terse=False):
     if terse:
@@ -17,9 +18,9 @@ def process_param(key, value, terse=False):
 
 
 TYPE_CODE = {
-    'if': lambda v: bool(v),
-    'unless': lambda v: not bool(v),
-    'elsif': lambda v: bool(v),
+    'if': operator.truth,
+    'unless': operator.not_,
+    'elsif': operator.truth,
     'else': lambda v: True}
 
 
