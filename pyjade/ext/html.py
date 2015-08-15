@@ -77,7 +77,7 @@ class Compiler(pyjade.compiler.Compiler):
         elif os.path.exists("%s.jade" % node.path):
             src = open("%s.jade" % node.path, 'r').read()
         else:
-            raise Exception("Include path doesn't exists")
+            raise Exception("Include path '%s' doesn't exist" % node.path)
 
         parser = pyjade.parser.Parser(src)
         block = parser.parse()
