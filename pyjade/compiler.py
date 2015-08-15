@@ -36,6 +36,7 @@ class Compiler(object):
       , 'sub'
       , 'sup'
       , 'textarea'
+      , 'wbr'
     ]
     selfClosing = [
         'meta'
@@ -47,6 +48,12 @@ class Compiler(object):
       , 'col'
       , 'br'
       , 'hr'
+      , 'embed'
+      , 'menuitem'
+      , 'param'
+      , 'source'
+      , 'track'
+      , 'wbr'
     ]
     autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,raw'.split(',')
 
