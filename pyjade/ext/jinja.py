@@ -10,6 +10,7 @@ from pyjade.utils import process
 
 ATTRS_FUNC = '__pyjade_attrs'
 ITER_FUNC = '__pyjade_iter'
+RAW_INCLUDE_FUNC = '__pyjade_include_raw'
 
 def attrs(attrs, terse=False):
     return Markup(_attrs(attrs, terse, Undefined))
@@ -74,6 +75,13 @@ class Compiler(_Compiler):
         self.visit(each.block)
         self.buf.append('{% endfor %}')
 
+    def visitInclude(self,node):
+        path = self.format_path(node.path)
+        if path.endswith('.jade'):
+            self.buffer('{%% include "%s" %%}' % (path))
+        else:
+            self.buffer('{{ %s("%s") }}' % (RAW_INCLUDE_FUNC, path))
+
     def attributes(self,attrs):
         return "%s%s(%s)%s" % (self.variable_start_string, ATTRS_FUNC,attrs, self.variable_end_string)
 
@@ -101,6 +109,15 @@ class PyJadeExtension(Extension):
             pyjade=self,
             # jade_env=JinjaEnvironment(),
         )
+
+        loader  = environment.loader
+
+        def include_raw(path):
+            src = loader.get_source(environment, path)[0]
+            if src.endswith("\n"):
+                src = src[:-1]
+            return Markup(src)
+        environment.globals[RAW_INCLUDE_FUNC] = include_raw
 
         # environment.exception_handler = self.exception_handler
         # get_corresponding_lineno
