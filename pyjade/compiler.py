@@ -15,7 +15,7 @@ class Compiler(object):
       , 'basic': '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">'
       , 'mobile': '<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.2//EN" "http://www.openmobilealliance.org/tech/DTD/xhtml-mobile12.dtd">'
     }
-    inlineTags = [
+    inlineTags = {
         'a'
       , 'abbr'
       , 'acronym'
@@ -36,8 +36,8 @@ class Compiler(object):
       , 'sub'
       , 'sup'
       , 'textarea'
-    ]
-    selfClosing = [
+    }
+    selfClosing = {
         'meta'
       , 'img'
       , 'link'
@@ -47,8 +47,8 @@ class Compiler(object):
       , 'col'
       , 'br'
       , 'hr'
-    ]
-    autocloseCode = 'if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,raw'.split(',')
+    }
+    autocloseCode = set('if,for,block,filter,autoescape,with,trans,spaceless,comment,cache,macro,localize,compress,raw'.split(','))
 
     filters = {}
 
@@ -62,9 +62,9 @@ class Compiler(object):
         self.filters.update(options.get('filters', {}))
         self.doctypes.update(options.get('doctypes', {}))
         # self.var_processor = options.get('var_processor', lambda x: x)
-        self.selfClosing.extend(options.get('selfClosing', []))
-        self.autocloseCode.extend(options.get('autocloseCode', []))
-        self.inlineTags.extend(options.get('inlineTags', []))
+        self.selfClosing.update(options.get('selfClosing', []))
+        self.autocloseCode.update(options.get('autocloseCode', []))
+        self.inlineTags.update(options.get('inlineTags', []))
         self.useRuntime = options.get('useRuntime', True)
         self.extension = options.get('extension', None) or '.jade'
         self.indents = 0
