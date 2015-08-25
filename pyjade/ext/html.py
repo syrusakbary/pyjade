@@ -6,6 +6,7 @@ import pyjade
 from pyjade.runtime import is_mapping, iteration, escape
 import six
 import os
+import operator 
 
 def process_param(key, value, terse=False):
     if terse:
@@ -17,9 +18,9 @@ def process_param(key, value, terse=False):
 
 
 TYPE_CODE = {
-    'if': lambda v: bool(v),
-    'unless': lambda v: not bool(v),
-    'elsif': lambda v: bool(v),
+    'if': operator.truth,
+    'unless': operator.not_,
+    'elsif': operator.truth,
     'else': lambda v: True}
 
 
@@ -34,9 +35,9 @@ def local_context_manager(compiler, local_context):
 
 
 class Compiler(pyjade.compiler.Compiler):
-    global_context = dict()
-    local_context = dict()
-    mixins = dict()
+    global_context = {}
+    local_context = {}
+    mixins = {}
     useRuntime = True
     def _do_eval(self, value):
         if isinstance(value, six.string_types):
@@ -122,7 +123,7 @@ class Compiler(pyjade.compiler.Compiler):
     def visitEach(self, each):
         obj = iteration(self._do_eval(each.obj), len(each.keys))
         for item in obj:
-            local_context = dict()
+            local_context = {}
             if len(each.keys) > 1:
                 for (key, value) in zip(each.keys, item):
                     local_context[key] = value
