@@ -89,7 +89,7 @@ class Compiler(object):
         self.buf = [self.compile_top()]
         self.lastBufferedIdx = -1
         self.visit(self.node)
-        compiled = u''.join(self.buf)
+        compiled = ''.join(self.buf)
         if isinstance(compiled, six.binary_type):
             compiled = six.text_type(compiled, 'utf8')
         return compiled
@@ -179,7 +179,7 @@ class Compiler(object):
         closed = name in self.selfClosing and not self.xml
         if tag.text:
             t = tag.text.nodes[0]
-            if t.startswith(u'/'):
+            if t.startswith('/'):
                 if len(t) > 1:
                     raise Exception('%s is self closing and should not have content.' % name)
                 closed = True
