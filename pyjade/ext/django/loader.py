@@ -66,7 +66,7 @@ class Loader(BaseLoader):
             key = '-'.join([template_name, hashlib.sha1('|'.join(template_dirs)).hexdigest()])
 
         
-        if settings.DEBUG or key not in self.template_cache:
+        if settings.DEBUG or settings.TEMPLATE_DEBUG or key not in self.template_cache:
 
             if os.path.splitext(template_name)[1] in ('.jade',):
                 try:
