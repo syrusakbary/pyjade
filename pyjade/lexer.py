@@ -464,13 +464,13 @@ class Lexer(object):
             states = ['key']
 
             class Namespace:
-                key = u''
-                val = u''
-                quote = u''
+                key = ''
+                val = ''
+                quote = ''
                 literal = True
 
                 def reset(self):
-                    self.key = self.val = self.quote = u''
+                    self.key = self.val = self.quote = ''
                     self.literal = True
 
                 def __str__(self):
