@@ -62,25 +62,54 @@ except ImportError:
     pass
 
 try:
-    from django.conf import settings
-    settings.configure(
-        TEMPLATE_DIRS=("cases/",),
-        TEMPLATE_LOADERS = (
-        ('pyjade.ext.django.Loader', (
-            'django.template.loaders.filesystem.Loader',
-            'django.template.loaders.app_directories.Loader',
-        )),
-        )
-    )
     import django
+    from django.conf import settings
+    if django.VERSION >= (1, 8, 0):
+        config = {
+            'TEMPLATES': [{
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': ["cases/"],
+                'OPTIONS': {
+                    'context_processors': [
+                        'django.template.context_processors.debug',
+                        'django.template.context_processors.request',
+                        'django.contrib.auth.context_processors.auth',
+                        'django.contrib.messages.context_processors.messages',
+                        'django.core.context_processors.request'
+                    ],
+                    'loaders': [
+                        ('pyjade.ext.django.Loader', (
+                            'django.template.loaders.filesystem.Loader',
+                            'django.template.loaders.app_directories.Loader',
+                        ))
+                    ],
+                },
+            }]
+        }
+        if django.VERSION >= (1, 9, 0):
+            config['TEMPLATES'][0]['OPTIONS']['builtins'] = ['pyjade.ext.django.templatetags']
+    else:
+        config = {
+            'TEMPLATE_DIRS': ("cases/",),
+            'TEMPLATE_LOADERS': (
+                ('pyjade.ext.django.Loader', (
+                    'django.template.loaders.filesystem.Loader',
+                    'django.template.loaders.app_directories.Loader',
+                )),
+            )
+        }
+
+    settings.configure(**config)
+
     if django.VERSION >= (1, 7, 0):
         django.setup()
+
     import django.template
     import django.template.loader
     from pyjade.ext.django import Compiler as DjangoCompiler
 
     def django_process(src, filename):
-        compiled = process(src, filename=filename,compiler = DjangoCompiler)
+        compiled = process(src, filename=filename, compiler=DjangoCompiler)
         print(compiled)
         t = django.template.Template(compiled)
 
@@ -89,7 +118,7 @@ try:
 
     processors['Django'] = django_process
 except ImportError:
-    pass
+    raise
 
 try:
     import pyjade.ext.mako

@@ -1,26 +1,41 @@
 from __future__ import absolute_import
 import hashlib
 
-from django.template.base import TemplateDoesNotExist, Template
+from django.template.base import Template
+try:
+    from django.template.exceptions import TemplateDoesNotExist
+except ImportError:  # Django < 1.9
+    from django.template.base import TemplateDoesNotExist
+
 from django.template.loader import BaseLoader
 try:
     from django.template.engine import Engine
-    from django.conf import settings
-    from django.core.exceptions import ImproperlyConfigured
-    try: settings.TEMPLATES
-    except ImproperlyConfigured: settings.configure()
-    make_origin = Engine.get_default().make_origin
-    find_template_loader = Engine.get_default().find_template_loader
-except ImportError: # Django < 1.8
-    from django.template.loader import make_origin, find_template_loader
+except ImportError:  # Django < 1.8
+    pass
 import os
 
 from django.conf import settings
 from .compiler import Compiler
-from pyjade import Parser
 
 from pyjade.utils import process
 # from django.template.loaders.cached import Loader
+
+
+try:
+    from django.template.loader import make_origin
+except ImportError:  # Django >= 1.9
+    try:
+        from django.template import Origin
+
+        def make_origin(display_name, loader, name, dirs):
+            return Origin(
+                name=display_name,
+                template_name=name,
+                loader=loader,
+            )
+    except ImportError:  # Django 1.8.x
+        make_origin = Engine.get_default().make_origin
+
 
 class Loader(BaseLoader):
     is_usable = True
@@ -30,6 +45,12 @@ class Loader(BaseLoader):
         self._loaders = loaders
         self._cached_loaders = []
 
+        try:
+            from django.template.loader import find_template_loader as _find_template_loader
+        except:
+            _find_template_loader = Engine.get_default().find_template_loader
+        self._find_template_loader = _find_template_loader
+
     @property
     def loaders(self):
         # Resolve loaders on demand to avoid circular imports
@@ -38,7 +59,7 @@ class Loader(BaseLoader):
             # could see an incomplete list. See #17303.
             cached_loaders = []
             for loader in self._loaders:
-                cached_loaders.append(find_template_loader(loader))
+                cached_loaders.append(self._find_template_loader(loader))
             self._cached_loaders = cached_loaders
         return self._cached_loaders
 
@@ -46,7 +67,8 @@ class Loader(BaseLoader):
         for loader in self.loaders:
             try:
                 template, display_name = loader(name, dirs)
-                return (template, make_origin(display_name, loader, name, dirs))
+                return (template, make_origin(display_name, loader,
+                                              name, dirs))
             except TemplateDoesNotExist:
                 pass
         raise TemplateDoesNotExist(name)
@@ -54,7 +76,8 @@ class Loader(BaseLoader):
     def load_template_source(self, template_name, template_dirs=None):
         for loader in self.loaders:
             try:
-                return loader.load_template_source(template_name,template_dirs)
+                return loader.load_template_source(template_name,
+                                                   template_dirs)
             except TemplateDoesNotExist:
                 pass
         raise TemplateDoesNotExist(template_name)
@@ -65,13 +88,12 @@ class Loader(BaseLoader):
             # If template directories were specified, use a hash to differentiate
             key = '-'.join([template_name, hashlib.sha1('|'.join(template_dirs)).hexdigest()])
 
-        
         if settings.DEBUG or key not in self.template_cache:
 
             if os.path.splitext(template_name)[1] in ('.jade',):
                 try:
                     source, display_name = self.load_template_source(template_name, template_dirs)
-                    source=process(source,filename=template_name,compiler=Compiler)
+                    source = process(source,filename=template_name,compiler=Compiler)
                     origin = make_origin(display_name, self.load_template_source, template_name, template_dirs)
                     template = Template(source, origin, template_name)
                 except NotImplementedError:

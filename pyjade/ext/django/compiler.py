@@ -60,10 +60,16 @@ class Compiler(_Compiler):
 
 
 try:
-    from django.template.base import add_to_builtins
-except ImportError: # Django < 1.8
-    from django.template import add_to_builtins
-add_to_builtins('pyjade.ext.django.templatetags')
+    try:
+        from django.template.base import add_to_builtins
+    except ImportError: # Django < 1.8
+        from django.template import add_to_builtins
+    add_to_builtins('pyjade.ext.django.templatetags')
+except ImportError:
+    # Django 1.9 removed add_to_builtins and instead
+    # provides a setting to specify builtins:
+    # TEMPLATES['OPTIONS']['builtins'] = ['pyjade.ext.django.templatetags']
+    pass
 
 from django.utils.translation import trans_real
 
