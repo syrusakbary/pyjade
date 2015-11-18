@@ -200,7 +200,7 @@ This code:
 html(lang="en")
   head
     title= pageTitle
-    script(type='text/javascript')
+    script(type='text/javascript').
       if (foo) {
          bar()
       }
