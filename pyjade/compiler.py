@@ -4,6 +4,7 @@ import six
 
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
+    RE_ASSIGNMENT = re.compile(r'^(\s*var\s+)(\w+) *= *([^;]+)')
     doctypes = {
         '5': '<!DOCTYPE html>'
       , 'xml': '<?xml version="1.0" encoding="utf-8" ?>'
@@ -324,6 +325,17 @@ class Compiler(object):
               codeTag = code.val.strip().split(' ', 1)[0]
               if codeTag in self.autocloseCode:
                   self.buf.append('{%% end%s %%}' % codeTag)
+
+    def visitBlockCode(self,code):
+        for instruction in ''.join(code.block.nodes).split(';'):
+            if not instruction.strip():
+                continue
+            matches = self.RE_ASSIGNMENT.match(instruction)
+            if matches:
+                self.buffer('{%% set %s = %s %%}' % (
+                    matches.groups()[1], matches.groups()[2]))
+            else:
+                self.buf.append('{%% %s %%}' % instruction)
 
     def visitEach(self,each):
         self.buf.append('{%% for %s in %s|__pyjade_iter:%d %%}' % (','.join(each.keys), each.obj, len(each.keys)))
