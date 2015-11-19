@@ -111,7 +111,11 @@ class Parser(object):
 
     def parseCode(self):
         tok = self.expect('code')
-        if not 'indent'==self.peek().type:
+        if 'indent'==self.peek().type:
+            node = nodes.BlockCode(
+                tok.val, self.parseTextBlock(), tok.buffer, tok.escape)
+            node.line = self.line()
+        else:
             node = nodes.Code(tok.val,tok.buffer,tok.escape) #tok.escape
             block,i = None,1
             node.line = self.line()
@@ -121,10 +125,6 @@ class Parser(object):
             if block:
                 self.skip(i-1)
                 node.block = self.block()
-        else:
-            node = nodes.BlockCode(
-                tok.val, self.parseTextBlock(), tok.buffer, tok.escape)
-            node.line = self.line()
         return node
 
     def parseComment(self):
