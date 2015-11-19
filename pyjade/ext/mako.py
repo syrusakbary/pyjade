@@ -97,7 +97,7 @@ class Compiler(_Compiler):
         self.buf.append('\\\n% endfor\n')
 
     def attributes(self,attrs):
-        return "${%s(%s, undefined=Undefined)}"%(ATTRS_FUNC,attrs)
+        return "${%s(%s, undefined=Undefined) | n}"%(ATTRS_FUNC,attrs)
 
 
 
