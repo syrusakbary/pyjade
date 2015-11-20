@@ -37,7 +37,7 @@ expected_results = {
     "p #[- abcf = [[123, [[],[]], []],'abc']] #[= abcf]": [
         {'buffer': None, 'line': 1, 'type': 'tag', 'inline_level': 0, 'val': u'p'},
         {'buffer': None, 'line': 1, 'type': 'string', 'inline_level': 0, 'val': u''},
-        {'inline_level': 1, 'val': u" abcf = [[123, [[],[]], []],'abc']", 'buffer': False, 'escape': False, 'line': 1, 'type': 'code'},
+        {'inline_level': 1, 'val': u"abcf = [[123, [[],[]], []],'abc']", 'buffer': False, 'escape': False, 'line': 1, 'type': 'code'},
         {'buffer': None, 'line': 1, 'type': 'string', 'inline_level': 0, 'val': u' '},
         {'inline_level': 1, 'val': u' abcf', 'buffer': True, 'escape': True, 'line': 1, 'type': 'code'},
         {'buffer': None, 'line': 1, 'type': 'string', 'inline_level': 0, 'val': u''}],

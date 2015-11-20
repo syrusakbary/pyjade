@@ -78,7 +78,7 @@ class Lexer(object):
     # RE_WHILE = re.compile(r'^while +([^\n]+)')
     RE_EACH = re.compile(r'^(?:- *)?(?:each|for) +([\w, ]+) +in +([^\n]+)')
     RE_BUFFERED_CODE = re.compile(r'^(!?=)([^\n]*)')
-    RE_UNBUFFERED_CODE = re.compile(r'^-([^\n]*)')
+    RE_UNBUFFERED_CODE = re.compile(r'^- *([^\n]*)')
     RE_ATTR_INTERPOLATE = re.compile(r'#\{([^}]+)\}')
     RE_ATTR_PARSE = re.compile(r'''^['"]|['"]$''')
     RE_INDENT_TABS = re.compile(r'^\n(\t*) *')
