@@ -70,7 +70,7 @@ class Lexer(object):
     RE_BLOCK = re.compile(r'''^block(( +(?:(prepend|append) +)?([^\n]*))|\n)''')
     RE_YIELD = re.compile(r'^yield *')
     RE_INCLUDE = re.compile(r'^include +([^\n]+)')
-    RE_ASSIGNMENT = re.compile(r'^(-[^\n]+var[^\n]+)?(\w+) += *([^;\n]+)( *;? *)')
+    RE_ASSIGNMENT = re.compile(r'^(-[^\n\w]+var[^\n\w]+)?(\w+) += *([^;\n]+)( *;? *)')
     RE_MIXIN = re.compile(r'^mixin +([-\w]+)(?: *\((.*)\))?')
     RE_CALL = re.compile(r'^\+\s*([-.\w]+)(?: *\((.*)\))?')
     RE_CONDITIONAL = re.compile(r'^(?:- *)?(if|unless|else if|elif|else)\b([^\n]*)')
