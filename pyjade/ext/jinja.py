@@ -17,7 +17,7 @@ def attrs(attrs, terse=False):
 class Compiler(_Compiler):
 
     def visitCodeBlock(self,block):
-        if self.mixing > 0:
+        if not block.name and self.mixing > 0:
           if self.mixing > 1:
             caller_name = '__pyjade_caller_%d' % self.mixing
           else:
