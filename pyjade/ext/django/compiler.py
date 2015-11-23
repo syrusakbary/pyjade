@@ -30,7 +30,7 @@ class Compiler(_Compiler):
     def visitMixin(self,mixin):
         self.mixing += 1
         if not mixin.call:
-          self.buffer('{%% __pyjade_kwacro %s %s %%}'%(mixin.name,mixin.args)) 
+          self.buffer('{%% __pyjade_kwacro %s %s %%}'%(mixin.name,mixin.args))
           self.visitBlock(mixin.block)
           self.buffer('{% end__pyjade_kwacro %}')
         elif mixin.block:
@@ -58,6 +58,29 @@ class Compiler(_Compiler):
     def attributes(self,attrs):
         return "{%% __pyjade_attrs %s %%}"%attrs
 
+    def visitVar(self, var, escape=False):
+        var = self.var_processor(var)
+        return ('%s%s%s%s' % (
+            self.variable_start_string,
+            var,
+            '|escape' if escape else '',
+            self.variable_end_string))
+
+    def interpolate(self, text, escape=None):
+        def repl(matchobj):
+            if escape is None:
+                if matchobj.group(2) == '!':
+                    filter_string = ''
+                else:
+                    filter_string = '|escape'
+            elif escape is True:
+                filter_string = '|escape'
+            elif escape is False:
+                filter_string = ''
+
+            return self.variable_start_string + matchobj.group(3) + \
+                filter_string + self.variable_end_string
+        return self.RE_INTERPOLATE.sub(repl, text)
 
 try:
     try:
@@ -97,7 +120,6 @@ try:
     @register_filter('markdown')
     def markdown_filter(x,y):
         return markdown(x)
-        
+
 except ImportError:
     pass
-
