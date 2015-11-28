@@ -72,6 +72,8 @@ class Compiler(object):
         self.terse = False
         self.xml = False
         self.mixing = 0
+        self.block_start_string = options.get("block_start_string", "{%")
+        self.block_end_string = options.get("block_end_string", "%}")
         self.variable_start_string = options.get("variable_start_string", "{{")
         self.variable_end_string = options.get("variable_end_string", "}}")
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
@@ -109,6 +111,12 @@ class Compiler(object):
             self.lastBuffered = str;
             self.lastBufferedIdx = len(self.buf)
 
+    def variable(self, str):
+        return "%s%s%s" % (self.variable_start_string, str, self.variable_end_string)
+
+    def tag(self, str):
+        return"%s %s %s" % (self.block_start_string, str, self.block_end_string)
+
     def visit(self, node, *args, **kwargs):
         # debug = self.debug
         # if debug:
@@ -136,15 +144,13 @@ class Compiler(object):
             self.visit(node)
 
     def visitCodeBlock(self, block):
-        self.buffer('{%% block %s %%}' % block.name)
+        self.buffer(self.tag('block ' + block.name))
         if block.mode=='prepend':
-            self.buffer('%ssuper()%s' % (self.variable_start_string,
-                                         self.variable_end_string))
+            self.buffer(self.variable('super()'))
         self.visitBlock(block)
         if block.mode == 'append':
-            self.buffer('%ssuper()%s' % (self.variable_start_string,
-                                         self.variable_end_string))
-        self.buffer('{% endblock %}')
+            self.buffer(self.variable('super()'))
+        self.buffer(self.tag('endblock'))
 
     def visitDoctype(self,doctype=None):
         if doctype and (doctype.val or not self.doctype):
@@ -156,12 +162,11 @@ class Compiler(object):
 
     def visitMixin(self,mixin):
         if mixin.block:
-            self.buffer('{%% macro %s(%s) %%}' % (mixin.name, mixin.args))
+            self.buffer(self.tag('macro %s(%s)' % (mixin.name, mixin.args)))
             self.visitBlock(mixin.block)
-            self.buffer('{% endmacro %}')
+            self.buffer(self.tag('endmacro'))
         else:
-          self.buffer('%s%s(%s)%s' % (self.variable_start_string, mixin.name,
-                                      mixin.args, self.variable_end_string))
+          self.buffer(self.variable('%s(%s)' % (mixin.name, mixin.args)))
 
     def visitTag(self,tag):
         self.indents += 1
@@ -236,8 +241,7 @@ class Compiler(object):
             elif escape is False:
                 filter_string = ''
 
-            return self.variable_start_string + matchobj.group(3) + \
-                filter_string + self.variable_end_string
+            return self.variable(matchobj.group(3) + filter_string)
         return self.RE_INTERPOLATE.sub(repl, text)
 
     def visitText(self,text):
@@ -261,7 +265,7 @@ class Compiler(object):
         self.buffer('<!--%s-->' % comment.val)
 
     def visitAssignment(self,assignment):
-        self.buffer('{%% set %s = %s %%}' % (assignment.name, assignment.val))
+        self.buffer(self.tag('set %s = %s' % (assignment.name, assignment.val)))
 
 
     def format_path(self,path):
@@ -272,11 +276,11 @@ class Compiler(object):
 
     def visitExtends(self,node):
         path = self.format_path(node.path)
-        self.buffer('{%% extends "%s" %%}' % (path))
+        self.buffer(self.tag('extends "%s"' % path))
 
     def visitInclude(self,node):
         path = self.format_path(node.path)
-        self.buffer('{%% include "%s" %%}' % (path))
+        self.buffer(self.tag('include "%s"' % path))
 
     def visitBlockComment(self, comment):
         if not comment.buffer:
@@ -293,19 +297,18 @@ class Compiler(object):
             'elif': lambda x: 'elif %s'%x,
             'else': lambda x: 'else'
         }
-        self.buf.append('{%% %s %%}' % TYPE_CODE[conditional.type](conditional.sentence))
+        self.buf.append(self.tag(TYPE_CODE[conditional.type](conditional.sentence)))
         if conditional.block:
             self.visit(conditional.block)
             for next in conditional.next:
               self.visitConditional(next)
         if conditional.type in ['if','unless']:
-            self.buf.append('{% endif %}')
+            self.buf.append(self.tag('endif'))
 
 
     def visitVar(self, var, escape=False):
         var = self.var_processor(var)
-        return ('%s%s%s%s' % (self.variable_start_string, var,
-                              '|escape' if escape else '', self.variable_end_string))
+        return self.variable(var + ('|escape' if escape else ''))
 
     def visitCode(self,code):
         if code.buffer:
@@ -313,7 +316,7 @@ class Compiler(object):
 
             self.buf.append(self.visitVar(val, code.escape))
         else:
-            self.buf.append('{%% %s %%}' % code.val)
+            self.buf.append(self.tag(code.val))
 
         if code.block:
             # if not code.buffer: self.buf.append('{')
@@ -323,15 +326,15 @@ class Compiler(object):
             if not code.buffer:
               codeTag = code.val.strip().split(' ', 1)[0]
               if codeTag in self.autocloseCode:
-                  self.buf.append('{%% end%s %%}' % codeTag)
+                  self.buf.append(self.tag('end' + codeTag))
 
     def visitEach(self,each):
-        self.buf.append('{%% for %s in %s|__pyjade_iter:%d %%}' % (','.join(each.keys), each.obj, len(each.keys)))
+        self.buf.append(self.tag('for %s in %s|__pyjade_iter:%d' % (','.join(each.keys), each.obj, len(each.keys))))
         self.visit(each.block)
-        self.buf.append('{% endfor %}')
+        self.buf.append(self.tag('endfor'))
 
     def attributes(self,attrs):
-        return "%s__pyjade_attrs(%s)%s" % (self.variable_start_string, attrs, self.variable_end_string)
+        return self.variable("__pyjade_attrs(%s)" % attrs)
 
     def visitDynamicAttributes(self, attrs):
         buf, classes, params = [], [], {}

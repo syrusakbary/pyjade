@@ -33,11 +33,21 @@ def convert_file():
     parser.add_option("-e", "--ext", dest="extension",
                       help="Set import/extends default file extension",
                       metavar="FILE")
+    parser.add_option("--block_start_string", default="{%", help="valid for jinja compiler only, defaut is '{%'")
+    parser.add_option("--block_end_string", default="%}", help="valid for jinja compiler only, defaut is '%}'")
+    parser.add_option("--variable_start_string", default="{{", help="valid for jinja compiler only, defaut is '{{'")
+    parser.add_option("--variable_end_string", default="}}", help="valid for jinja compiler only, defaut is '}}'")
 
     options, args = parser.parse_args()
 
     file_output = options.output or (args[1] if len(args) > 1 else None)
     compiler = options.compiler
+
+    if compiler != "jinja":
+        options.pop("block_start_string", None)
+        options.pop("block_end_string", None)
+        options.pop("variable_start_string", None)
+        options.pop("variable_end_string", None)
 
     if options.extension:
         extension = '.%s' % options.extension
