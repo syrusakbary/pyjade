@@ -18,13 +18,24 @@ class Compiler(_Compiler):
 
     def visitInclude(self, node):
         sep = os.path.sep
-        baseDir = os.getcwd()+sep+'templates'+sep
-        if os.path.exists(baseDir+node.path):
-            src = open(baseDir+node.path, 'r').read()
-        elif os.path.exists((baseDir+"%s.jade") % node.path):
-            src = open((baseDir+"%s.jade") % node.path, 'r').read()
-        else:
-            raise Exception("Include path doesn't exists")
+        baseDir = os.getcwd()+sep
+        path = node.path
+        done = False
+        if os.path.exists(baseDir+path):
+            src = open(baseDir+path, 'r').read()
+            done = True
+        elif os.path.exists((baseDir+"%s.jade") % path):
+            src = open((baseDir+"%s.jade") % path, 'r').read()
+            done = True
+
+        if not done:
+          baseDir += 'templates'+sep
+          if os.path.exists(baseDir+path):
+              src = open(baseDir+path, 'r').read()
+          elif os.path.exists((baseDir+"%s.jade") % path):
+              src = open((baseDir+"%s.jade") % path, 'r').read()
+          else:
+              raise Exception("Include path: " + str(path) + " doesn't exist")
 
         parser = pyjade.parser.Parser(src)
         block = parser.parse()
