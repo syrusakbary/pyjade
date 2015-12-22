@@ -47,7 +47,7 @@ def escape(s):
         .replace('"', '&#34;')
     )
 
-def attrs (attrs=[],terse=False, undefined=None):
+def attrs (attrs=[],terse=False, undefined=None, escape=escape):
     buf = []
     if bool(attrs):
         buf.append(u'')
