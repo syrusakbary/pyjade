@@ -80,7 +80,7 @@ class Lexer(object):
     RE_CODE = re.compile(r'^(!?=|-)([^\n]+)')
     RE_ATTR_INTERPOLATE = re.compile(r'#\{([^}]+)\}')
     RE_ATTR_PARSE = re.compile(r'''^['"]|['"]$''')
-    RE_AND_ATTRIBUTES = re.compile(r'&attributes\((\w+)\)')
+    RE_AND_ATTRIBUTES = re.compile(r'&attributes\((.+)\)')
     RE_INDENT_TABS = re.compile(r'^\n(\t*) *')
     RE_INDENT_SPACES = re.compile(r'^\n( *)')
     RE_COLON = re.compile(r'^: *')
