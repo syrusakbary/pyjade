@@ -186,8 +186,6 @@ class Compiler(object):
 
         self.buffer('<%s' % name)
         self.visitAttributes(tag.attrs)
-        if tag.andAttrs:
-            self.visitAndAttributes(tag.andAttrs)
         self.buffer('/>' if not self.terse and closed else '>')
 
         if not closed:
@@ -378,10 +376,6 @@ class Compiler(object):
                 temp_attrs.append(attr)
 
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
-
-    def visitAndAttributes(self, andattrs):
-        print('visitAndAttributes', andattrs)
-        self.buffer('{%% for k in %s %%} {{ k }}="{{ k[v] }}"{%% endfor %%}' % andattrs)
 
     @classmethod
     def register_filter(cls, name, f):

@@ -80,6 +80,7 @@ class Lexer(object):
     RE_CODE = re.compile(r'^(!?=|-)([^\n]+)')
     RE_ATTR_INTERPOLATE = re.compile(r'#\{([^}]+)\}')
     RE_ATTR_PARSE = re.compile(r'''^['"]|['"]$''')
+    RE_AND_ATTRIBUTES = re.compile(r'&attributes\((\w+)\)')
     RE_INDENT_TABS = re.compile(r'^\n(\t*) *')
     RE_INDENT_SPACES = re.compile(r'^\n( *)')
     RE_COLON = re.compile(r'^: *')
@@ -586,6 +587,9 @@ class Lexer(object):
 
             return tok
 
+    def andAttrs(self):
+        return self.scan(self.RE_AND_ATTRIBUTES, 'andattrs')
+
     def captureIndent(self):
         if self.indentRe:
             captures = regexec(self.indentRe, self.input)
@@ -670,6 +674,7 @@ class Lexer(object):
             or self.id() \
             or self.className() \
             or self.attrs() \
+            or self.andAttrs() \
             or self.indent() \
             or self.comment() \
             or self.colon() \
