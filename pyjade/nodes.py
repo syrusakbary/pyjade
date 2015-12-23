@@ -137,7 +137,6 @@ class Tag(Node):
 			if attr and attr['name'] == name: return attr['val']
 
 	def setAndAttributes(self, val):
-		print('andAttributes is', val)
 		self.andAttrs = val
 
 	@property
