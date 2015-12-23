@@ -380,7 +380,6 @@ class Compiler(object):
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
 
     def visitAndAttributes(self, andattrs):
-        print('visitAndAttributes', andattrs)
         self.buffer('{%% for k in %s %%} {{ k }}="{{ k[v] }}"{%% endfor %%}' % andattrs)
 
     @classmethod

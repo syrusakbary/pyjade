@@ -305,7 +305,6 @@ class Parser(object):
                 continue
             elif 'andattrs' == t:
                 tok = self.advance()
-                print(tok)
                 tag.setAndAttributes(tok.val)
                 continue
             else:
