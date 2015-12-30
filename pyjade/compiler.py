@@ -184,7 +184,10 @@ class Compiler(object):
                     raise Exception('%s is self closing and should not have content.' % name)
                 closed = True
 
-        self.buffer('<%s' % name)
+        if tag.buffer:
+            self.buffer('<' + self.interpolate(name))
+        else:
+            self.buffer('<%s' % name)
         self.visitAttributes(tag.attrs)
         self.buffer('/>' if not self.terse and closed else '>')
 
@@ -200,7 +203,10 @@ class Compiler(object):
             if self.pp and not name in self.inlineTags and not textOnly:
                 self.buffer('\n' + '  ' * (self.indents-1))
 
-            self.buffer('</%s>' % name)
+            if tag.buffer:
+                self.buffer('</' + self.interpolate(name) + '>')
+            else:
+                self.buffer('</%s>' % name)
         self.indents -= 1
 
     def visitFilter(self,filter):

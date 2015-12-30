@@ -284,7 +284,7 @@ class Parser(object):
                                 (self.filename, self.line()))
 
         tok = self.advance()
-        tag = nodes.Tag(tok.val)
+        tag = nodes.Tag(tok.val, buffer=tok.val[0] == '#')
         tag.inline_level = tok.inline_level
         dot = None
 
