@@ -113,7 +113,7 @@ class Tag(Node):
 		self._attrs = []
 		self.inline = inline
 		self.block = block or Block()
-                self.buffer = buffer
+		self.buffer = buffer
 
 	@classmethod
 	def static(self, string, only_remove=False):
