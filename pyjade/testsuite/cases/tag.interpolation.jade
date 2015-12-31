@@ -1,0 +1,23 @@
+tag = 'p'
+foo = 'bar'
+
+#{tag} value
+#{tag}(foo='bar') value
+#{tag + 'suffix'}(something) here
+
+mixin item(icon, href)
+  li
+    if href
+      a(href=href)
+        img.icon(src=icon)
+        block
+    else
+      span
+        img.icon(src=icon)
+        block
+
+ul
+  +item('contact')
+    | Contact
+  +item(None, '/contact')
+    | Contact
