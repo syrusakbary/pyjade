@@ -380,7 +380,7 @@ class Compiler(object):
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
 
     def visitAndAttributes(self, andattrs):
-        self.buffer('{%% for k in %s %%} {{ k }}="{{ k[v] }}"{%% endfor %%}' % andattrs)
+        self.buffer('{%% for k, v in %s|__pyjade_items %%} {{ k }}="{{ v }}"{%% endfor %%}' % andattrs)
 
     @classmethod
     def register_filter(cls, name, f):
