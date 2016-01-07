@@ -1,7 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/SyrusAkbary/pyjade.png)](https://secure.travis-ci.org/SyrusAkbary/pyjade)
-
-PyJade
-======
+# PyJade [![Build Status](https://travis-ci.org/syrusakbary/pyjade.svg)](https://travis-ci.org/syrusakbary/pyjade)
 
 [![Join the chat at https://gitter.im/syrusakbary/pyjade](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/syrusakbary/pyjade?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
