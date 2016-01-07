@@ -64,6 +64,8 @@ class Compiler(pyjade.compiler.Compiler):
                 arg_values = self._do_eval(args)
             else:
                 arg_values = []
+            if not isinstance(arg_values, (list, tuple)):
+                arg_values = [arg_values]
             local_context = dict(zip(arg_names, arg_values))
             with local_context_manager(self, local_context):
                 self.visitBlock(mixin.block)

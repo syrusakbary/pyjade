@@ -56,7 +56,7 @@ def replace_string_brackets(splitted_string):
 class Lexer(object):
     RE_INPUT = re.compile(r'\r\n|\r')
     RE_COMMENT = re.compile(r'^ *\/\/(-)?([^\n]*)')
-    RE_TAG = re.compile(r'^(\w[-:\w]*)')
+    RE_TAG = re.compile(r'^(\w[-:\w]*|#\{.*?\})')
     RE_DOT_BLOCK_START = re.compile(r'^\.\n')
     RE_FILTER = re.compile(r'^:(\w+)')
     RE_DOCTYPE = re.compile(r'^(?:!!!|doctype) *([^\n]+)?')
