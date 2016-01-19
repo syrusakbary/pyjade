@@ -6,7 +6,7 @@ import pyjade
 from pyjade.runtime import is_mapping, iteration, escape
 import six
 import os
-import operator 
+import operator
 
 def process_param(key, value, terse=False):
     if terse:
@@ -75,12 +75,18 @@ class Compiler(pyjade.compiler.Compiler):
         return self._interpolate(text, lambda x: str(self._do_eval(x)))
 
     def visitInclude(self, node):
-        if os.path.exists(node.path):
-            src = open(node.path, 'r').read()
-        elif os.path.exists("%s.jade" % node.path):
-            src = open("%s.jade" % node.path, 'r').read()
+        if self.filename is not None:
+            basepath = os.path.dirname(self.filename)
         else:
-            raise Exception("Include path doesn't exists")
+            basepath = os.getcwd()
+        import_filename = os.path.join(basepath, node.path.strip('\"\''))
+
+        if os.path.exists(import_filename):
+            src = open(import_filename, 'r').read()
+        elif os.path.exists("%s.jade" % import_filename):
+            src = open("%s.jade" % import_filename, 'r').read()
+        else:
+            raise Exception("Include path doesn't exists: {}".format(import_filename))
 
         parser = pyjade.parser.Parser(src)
         block = parser.parse()
@@ -161,8 +167,9 @@ class Compiler(pyjade.compiler.Compiler):
 
 HTMLCompiler = Compiler
 
-def process_jade(src):
+def process_jade(src, filename=None):
     parser = pyjade.parser.Parser(src)
     block = parser.parse()
     compiler = Compiler(block, pretty=True)
+    compiler.filename = filename
     return compiler.compile()

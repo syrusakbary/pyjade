@@ -17,6 +17,44 @@ class Compiler(_Compiler):
             options.update(getattr(settings,'PYJADE',{}))
         super(Compiler, self).__init__(node, **options)
 
+    def visitInclude(self, node):
+
+        def find_filename(filename, directories, extensions):
+            filenames = []
+            for i_extension in extensions:
+                for j_directory in directories:
+                    filenames.append(
+                        os.path.join(j_directory, filename) + i_extension
+                    )
+
+            valid_filenames = [i for i in filter(os.path.exists, filenames)]
+
+            if len(valid_filenames) == 0:
+                raise Exception(
+                    "Include path doesn't exists: {}".format(filenames)
+                )
+
+            return valid_filenames[0]
+
+        include_dirs = []
+        if self.filename is not None:
+            include_dirs += [os.path.dirname(self.filename)]
+        include_dirs += self.include_dirs if self.include_dirs else []
+        if self.filename is None:
+            include_dirs += [os.getcwd()]
+
+        import_filename = node.path.strip('\"\'')
+        import_filename = find_filename(
+            import_filename,
+            directories=include_dirs,
+            extensions=('', '.jade')
+        )
+        src = open(import_filename, 'r').read()
+
+        parser = Parser(src)
+        block = parser.parse()
+        self.visit(block)
+
     def visitCodeBlock(self,block):
         self.buffer('{%% block %s %%}'%block.name)
         if block.mode=='append': self.buffer('{{block.super}}')
@@ -30,7 +68,7 @@ class Compiler(_Compiler):
     def visitMixin(self,mixin):
         self.mixing += 1
         if not mixin.call:
-          self.buffer('{%% __pyjade_kwacro %s %s %%}'%(mixin.name,mixin.args)) 
+          self.buffer('{%% __pyjade_kwacro %s %s %%}'%(mixin.name,mixin.args))
           self.visitBlock(mixin.block)
           self.buffer('{% end__pyjade_kwacro %}')
         elif mixin.block:
@@ -97,7 +135,6 @@ try:
     @register_filter('markdown')
     def markdown_filter(x,y):
         return markdown(x)
-        
+
 except ImportError:
     pass
-

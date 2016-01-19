@@ -76,6 +76,8 @@ class Compiler(object):
         self.variable_end_string = options.get("variable_end_string", "}}")
         if 'doctype' in self.options: self.setDoctype(options['doctype'])
         self.instring = False
+        self.filename = options.get('filename')
+        self.include_dirs = options.get('include_dirs', ())
 
     def var_processor(self, var):
         if isinstance(var,six.string_types) and var.startswith('_ '):

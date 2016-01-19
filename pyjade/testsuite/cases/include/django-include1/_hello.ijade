@@ -1,0 +1,2 @@
+mixin hello(subject)
+  h1 Hello, #{subject}!
