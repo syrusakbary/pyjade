@@ -1,8 +1,10 @@
-*.pyc
-basic.py
-*.egg-info
-dist/*
-build/*
 *.DS_Store
+*.egg-info
+*.pyc
 *.sublime-*
-.idea
+/.idea/
+/.cache/
+/.venv/
+basic.py
+build/*
+dist/*

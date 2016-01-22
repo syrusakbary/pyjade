@@ -1,0 +1,2 @@
+mixin goodbye(subject)
+  h1 Goodbye, #{subject}!

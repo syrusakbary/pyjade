@@ -4,11 +4,13 @@ import pyjade.ext.html
 from pyjade.utils import process
 from pyjade.exceptions import CurrentlyNotSupported
 import six
+import os
 
 from nose import with_setup
 
 processors =  {}
 jinja_env = None
+cases_dir = os.path.join(os.path.dirname(__file__), 'cases') + '/'
 
 def teardown_func():
     pass
@@ -17,7 +19,7 @@ def teardown_func():
 try:
     from jinja2 import Environment, FileSystemLoader
     from pyjade.ext.jinja import PyJadeExtension
-    jinja_env = Environment(extensions=[PyJadeExtension], loader=FileSystemLoader('cases/'))
+    jinja_env = Environment(extensions=[PyJadeExtension], loader=FileSystemLoader(cases_dir))
     def jinja_process (src, filename):
         global jinja_env
         template = jinja_env.get_template(filename)
@@ -31,7 +33,7 @@ except ImportError:
 try:
     from jinja2 import Environment, FileSystemLoader
     from pyjade.ext.jinja import PyJadeExtension
-    jinja_env = Environment(extensions=[PyJadeExtension], loader=FileSystemLoader('cases/'),
+    jinja_env = Environment(extensions=[PyJadeExtension], loader=FileSystemLoader(cases_dir),
 			variable_start_string = "{%#.-.**", variable_end_string="**.-.#%}"
     )
     def jinja_process_variable_start_string (src, filename):
@@ -48,7 +50,7 @@ try:
     from pyjade.ext.tornado import patch_tornado
     patch_tornado()
 
-    loader = tornado.template.Loader('cases/')
+    loader = tornado.template.Loader(cases_dir)
     def tornado_process (src, filename):
         global loader, tornado
         template = tornado.template.Template(src,name='_.jade',loader=loader)
@@ -64,11 +66,18 @@ except ImportError:
 try:
     import django
     from django.conf import settings
+
+    template_dirs = [
+        cases_dir,
+        cases_dir + "include/django-include1",
+        cases_dir + "include/django-include2",
+    ]
+
     if django.VERSION >= (1, 8, 0):
         config = {
             'TEMPLATES': [{
                 'BACKEND': 'django.template.backends.django.DjangoTemplates',
-                'DIRS': ["cases/"],
+                'DIRS': template_dirs,
                 'OPTIONS': {
                     'context_processors': [
                         'django.template.context_processors.debug',
@@ -90,7 +99,7 @@ try:
             config['TEMPLATES'][0]['OPTIONS']['builtins'] = ['pyjade.ext.django.templatetags']
     else:
         config = {
-            'TEMPLATE_DIRS': ("cases/",),
+            'TEMPLATE_DIRS': tuple(template_dirs),
             'TEMPLATE_LOADERS': (
                 ('pyjade.ext.django.Loader', (
                     'django.template.loaders.filesystem.Loader',
@@ -109,11 +118,25 @@ try:
     from pyjade.ext.django import Compiler as DjangoCompiler
 
     def django_process(src, filename):
-        compiled = process(src, filename=filename, compiler=DjangoCompiler)
+
+        class PhonyObj(object):
+            pass
+
+        obj = PhonyObj()
+        obj.pk = 99
+        obj.site = 'www.pugjs.com'
+
+        compiled = process(
+            src,
+            filename=cases_dir + filename.strip('\'\"'),
+            compiler=DjangoCompiler,
+            include_dirs=template_dirs
+        )
         print(compiled)
         t = django.template.Template(compiled)
 
         ctx = django.template.Context()
+        ctx['object'] = obj
         return t.render(ctx)
 
     processors['Django'] = django_process
@@ -124,7 +147,10 @@ try:
     import pyjade.ext.mako
     import mako.template
     from mako.lookup import TemplateLookup
-    dirlookup = TemplateLookup(directories=['cases/'],preprocessor=pyjade.ext.mako.preprocessor)
+    dirlookup = TemplateLookup(
+        directories=[cases_dir],
+        preprocessor=pyjade.ext.mako.preprocessor
+    )
 
     def mako_process(src, filename):
         t = mako.template.Template(src, lookup=dirlookup,preprocessor=pyjade.ext.mako.preprocessor, default_filters=['decode.utf8'])
@@ -139,57 +165,72 @@ def setup_func():
     global jinja_env, processors
 
 def html_process(src, filename):
-    # hack for includes to work because of working directory
-    if 'include' in src:
-        import re
-        src = re.sub(r'((^|\n)\s*include )(?!cases/)', '\\1cases/', src)
-    return pyjade.ext.html.process_jade(src)
+    return pyjade.ext.html.process_jade(src, cases_dir + filename)
 
 processors['Html'] = html_process
 
 def run_case(case,process):
     global processors
+
+    jade_filename = '%s.jade'%case
+    case_filename = cases_dir + jade_filename
+
     processor = processors[process]
-    jade_file = open('cases/%s.jade'%case)
+    jade_file = open(case_filename)
     jade_src = jade_file.read()
     if isinstance(jade_src, six.binary_type):
         jade_src = jade_src.decode('utf-8')
     jade_file.close()
 
-    html_file = open('cases/%s.html'%case)
+    try:
+        html_file = open(cases_dir + '%s-%s.html'%(case,process))
+    except IOError:
+        html_file = open(cases_dir + '%s.html'%(case))
     html_src = html_file.read().strip('\n')
     if isinstance(html_src, six.binary_type):
         html_src = html_src.decode('utf-8')
     html_file.close()
-    try:
-        processed_jade = processor(jade_src, '%s.jade'%case).strip('\n')
-        print('PROCESSED\n',processed_jade,len(processed_jade))
-        print('EXPECTED\n',html_src,len(html_src))
-        assert processed_jade==html_src
-
-    except CurrentlyNotSupported:
-        pass
+    processed_jade = processor(jade_src, jade_filename).strip('\n')
+    print(
+u'''
+### PROCESSED (len=%d) ###
+%s
+### EXPECTED (len=%d) ###
+%s
+''' % (len(processed_jade), processed_jade, len(html_src), html_src)
+        )
+    assert processed_jade==html_src
 
 exclusions = {
-    'Html': set(['mixins', 'mixin.blocks', 'layout', 'unicode']),
-    'Mako': set(['layout']),
-    'Tornado': set(['layout']),
-    'Jinja2': set(['layout']),
-    'Jinja2-variable_start_string': set(['layout']),
-    'Django': set(['layout'])}
-    
+    'Html': set(['*-Django', 'inheritance', 'mixins', 'mixin.blocks', 'unicode']),
+    'Mako': set(['*-Django']),
+    'Tornado': set(['*-Django', 'interpolation', 'mixins', 'mixin.blocks']),
+    'Jinja2': set(['*-Django']),
+    'Jinja2-variable_start_string': set(['*-Django']),
+    'Django': set(['mixin.blocks',])}
+
 
 @with_setup(setup_func, teardown_func)
 def test_case_generator():
-    global processors
-
     import os
     import sys
-    for dirname, dirnames, filenames in os.walk('cases/'):
-        # raise Exception(filenames)
-        filenames = filter(lambda x:x.endswith('.jade'),filenames)
-        filenames = list(map(lambda x:x.replace('.jade',''),filenames))
-        for processor in processors.keys():
-            for filename in filenames:
-                if not filename in exclusions[processor]:
-                    yield run_case, filename,processor
+
+    global processors
+
+    def fnmatchany(i, items):
+        from fnmatch import fnmatch
+        for exclusion in exclusions[processor]:
+            if fnmatch(filename, exclusion):
+                return True
+        return False
+
+    filenames = [
+        os.path.splitext(i)[0]
+        for i in os.listdir(cases_dir)
+        if i.endswith('.jade')
+    ]
+    for processor in processors.keys():
+        for filename in filenames:
+            if fnmatchany(filename, exclusions[processor]):
+                continue
+            yield run_case, filename, processor

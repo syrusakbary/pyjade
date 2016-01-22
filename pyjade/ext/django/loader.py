@@ -7,7 +7,10 @@ try:
 except ImportError:  # Django < 1.9
     from django.template.base import TemplateDoesNotExist
 
-from django.template.loader import BaseLoader
+try:
+    from django.template.loaders.base import Loader as BaseLoader
+except ImportError:  # Django < 1.8
+    from django.template.loader import BaseLoader
 try:
     from django.template.engine import Engine
 except ImportError:  # Django < 1.8
@@ -40,7 +43,16 @@ except ImportError:  # Django >= 1.9
 class Loader(BaseLoader):
     is_usable = True
 
-    def __init__(self, loaders):
+    def __init__(self, *args):
+        if len(args) == 2:
+            # Django >= 1.8
+            engine, loaders = args
+            super(Loader, self).__init__(engine)
+        if len(args) == 1:
+            # Django < 1.8
+            engine, loaders = None, args[0]
+            super(Loader, self).__init__()
+
         self.template_cache = {}
         self._loaders = loaders
         self._cached_loaders = []
@@ -84,16 +96,28 @@ class Loader(BaseLoader):
 
     def load_template(self, template_name, template_dirs=None):
         key = template_name
+
         if template_dirs:
             # If template directories were specified, use a hash to differentiate
             key = '-'.join([template_name, hashlib.sha1('|'.join(template_dirs)).hexdigest()])
+
+        if template_dirs is None:
+            # Make sure we have template_dirs so we can find included jade files.
+            try:
+                # Django >= 1.8
+                include_dirs = self.get_dirs()
+            except:
+                # Django < 1.8
+                include_dirs = settings.TEMPLATE_DIRS
+        else:
+            include_dirs = template_dirs[:]
 
         if settings.DEBUG or key not in self.template_cache:
 
             if os.path.splitext(template_name)[1] in ('.jade',):
                 try:
                     source, display_name = self.load_template_source(template_name, template_dirs)
-                    source = process(source,filename=template_name,compiler=Compiler)
+                    source = process(source, filename=display_name, compiler=Compiler, include_dirs=include_dirs)
                     origin = make_origin(display_name, self.load_template_source, template_name, template_dirs)
                     template = Template(source, origin, template_name)
                 except NotImplementedError:
