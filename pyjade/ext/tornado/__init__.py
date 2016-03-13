@@ -2,7 +2,7 @@ from pyjade import Compiler as _Compiler
 from pyjade.runtime import attrs, escape, iteration
 import tornado.template
 from pyjade.utils import process
-from pyjade.exceptions import CurrentlyNotSupported
+
 
 ATTRS_FUNC = '__pyjade_attrs'
 ESCAPE_FUNC = '__pyjade_escape'
@@ -29,7 +29,7 @@ class Compiler(_Compiler):
         return self._interpolate(text,lambda x:'{%% raw %s(%s) %%}' % (ESCAPE_FUNC, x))
 
     def visitMixin(self,mixin):
-        raise CurrentlyNotSupported('mixin')
+        raise NotImplementedError('mixin')
 
     def visitAssignment(self,assignment):
         self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))
