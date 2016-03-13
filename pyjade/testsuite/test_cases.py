@@ -2,7 +2,6 @@ from __future__ import print_function
 import pyjade
 import pyjade.ext.html
 from pyjade.utils import process
-from pyjade.exceptions import CurrentlyNotSupported
 import six
 
 from nose import with_setup
@@ -167,7 +166,7 @@ def run_case(case,process):
         print('EXPECTED\n',html_src,len(html_src))
         assert processed_jade==html_src
 
-    except CurrentlyNotSupported:
+    except NotImplementedError:
         pass
 
 exclusions = {
