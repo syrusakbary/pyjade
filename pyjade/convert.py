@@ -34,10 +34,15 @@ def convert_file():
                       help="Set import/extends default file extension",
                       metavar="FILE")
 
+    parser.add_option("-r", "--recursive", dest="recursive",
+                      help="Converts all files in this directory and subdirectories",
+                      metavar="DIRECTORY")
+
     options, args = parser.parse_args()
 
     file_output = options.output or (args[1] if len(args) > 1 else None)
     compiler = options.compiler
+    recursive = options.recursive
 
     if options.extension:
         extension = '.%s' % options.extension
@@ -48,21 +53,58 @@ def convert_file():
 
     if compiler in available_compilers:
         import six
+        # do all the conversion first if its a file ...
         if len(args) >= 1:
-            template = codecs.open(args[0], 'r', encoding='utf-8').read()
-        elif six.PY3:
-            template = sys.stdin.read()
-        else:
-            template = codecs.getreader('utf-8')(sys.stdin).read()
-        output = process(template, compiler=available_compilers[compiler],
-                         staticAttrs=True, extension=extension)
-        if file_output:
-            outfile = codecs.open(file_output, 'w', encoding='utf-8')
-            outfile.write(output)
-        elif six.PY3:
-            sys.stdout.write(output)
-        else:
-            codecs.getwriter('utf-8')(sys.stdout).write(output)
+            if os.path.isfile(args[0]): # checks if args[0] is a file.
+                template = codecs.open(args[0], 'r', encoding='utf-8').read()
+            elif six.PY3:
+                template = sys.stdin.read()
+            elif os.path.isdir(args[0]):
+                template = False
+            elif os.path.isfile(args[0]) and not codecs.open(args[0], 'r', encoding='utf-8').read() : # input is a file but cant be read.
+                try:
+                    template = codecs.getreader('utf-8')(sys.stdin).read()
+                except Exception as e:
+                    print(e)
+        if template:
+            output = process(template, compiler=available_compilers[compiler],staticAttrs=True, extension=extension)
+
+        ### the rest of the output saves the pyjade output or does the converting now if its a folder.
+
+        # do not call the walk directory routine if a dir is specified without the recursive ("-r") option.
+        # "explicit is better than implicit" - The Zen Of Python.
+
+        # lists all files in directories and lower subdirectories.
+        # will raise "not a directory error" if user specifies a file or other.
+        if recursive and os.path.isdir(args[0]):
+            for root, dirs, files in os.walk(args[0], topdown=False):
+                for name in files:
+                    current_file_path = os.path.join(root, name) # returns full file path , for example: /home/user/stuff/example.jade
+                    if "*.jade" not in current_file_path:
+                    # could of done it inline with the walk - but i prefer readability.
+                        pass
+                    template = codecs.open(current_file_path, 'r', encoding='utf-8').read() # should only be a .jade file.
+                    
+                    ### TODO - OUTPUT FILE EXTENSION VARIABLE
+                    output_filepath = current_file_path[:current_file_path.rfind(".")] + "html" # strips "jade" at the end of the path and replaces it with "html" which could be a variable in future.
+                    # methods for each file in directory and all sub directories goes here.
+                    output = process(template, compiler=available_compilers[compiler], staticAttrs=True, extension=extension)
+                    outfile = codecs.open(output_filepath, 'w', encoding='utf-8')
+                    outfile.write(output)
+
+        elif os.path.isdir(args[0]): # if path specified is a directory and has no -r option specified, then make sure the user wanted to do this.
+            raise Exception("%s is a directory. \n Please use the '-r' flag if you want to convert a directory and all its subdirectories " % (args[0]))
+        elif os.path.isfile(args[0]): # if it gets to here without ending, then a single file or multiple explicit files were specified.
+            # single file operations
+            if file_output:  # will raise Exception "is not file" if its a directory or other - no really! inheritance!
+                outfile = codecs.open(file_output, 'w', encoding='utf-8')
+                outfile.write(output)
+            elif six.PY3:
+                sys.stdout.write(output)
+            else:
+                codecs.getwriter('utf-8')(sys.stdout).write(output)
+
+
     else:
         raise Exception('You must have %s installed!' % compiler)
 
