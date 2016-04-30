@@ -39,8 +39,8 @@ cd /to/your/directory
 pyjade -r ./
 ```
 
-This will convert jade files to Django. other compilers have not been tested or officially implented,
-but might be implicitly implemented in this features current development stage, using the -c flag.
+This will convert jade files to Django. other compilers have not been tested or officially implemented,
+but might be implicitly implemented in this feature's current development stage, using the -c flag.
 This will not overwrite the source jade files, but write html files along side it.
 
 
