@@ -34,9 +34,8 @@ def convert_file():
                       help="Set import/extends default file extension",
                       metavar="FILE")
 
-    parser.add_option("-r", "--recursive", dest="recursive",
-                      help="Converts all files in this directory and subdirectories",
-                      metavar="DIRECTORY")
+    parser.add_option("-r", "--recursive", action="store_true", dest="recursive",
+                      help="Converts all files in this directory and subdirectories",metavar="DIRECTORY")
 
     options, args = parser.parse_args()
 
@@ -55,9 +54,10 @@ def convert_file():
         import six
         # do all the conversion first if its a file ...
         if len(args) >= 1:
+            print(args)
             if os.path.isfile(args[0]): # checks if args[0] is a file.
                 template = codecs.open(args[0], 'r', encoding='utf-8').read()
-            elif six.PY3:
+            elif six.PY3 and not os.path.isfile(args[0]) and not os.path.isdir(args[0]) :  # check if any arguments or flags was specified then read from std in if there wasnt.
                 template = sys.stdin.read()
             elif os.path.isdir(args[0]):
                 template = False
@@ -66,7 +66,7 @@ def convert_file():
                     template = codecs.getreader('utf-8')(sys.stdin).read()
                 except Exception as e:
                     print(e)
-            if template:
+            if template: #usally gets here because of file or stdin was specified.
                 output = process(template, compiler=available_compilers[compiler],staticAttrs=True, extension=extension)
 
         ### the rest of the output saves the pyjade output or does the converting now if its a folder.
@@ -84,9 +84,9 @@ def convert_file():
                     # could of done it inline with the walk - but i prefer readability.
                         pass
                     template = codecs.open(current_file_path, 'r', encoding='utf-8').read() # should only be a .jade file.
-                    
+
                     ### TODO - OUTPUT FILE EXTENSION VARIABLE
-                    output_filepath = current_file_path[:current_file_path.rfind(".")] + "html" # strips "jade" at the end of the path and replaces it with "html" which could be a variable in future.
+                    output_filepath = current_file_path[:current_file_path.rfind(".")] + ".html" # strips "jade" at the end of the path and replaces it with "html" which could be a variable in future.
                     # methods for each file in directory and all sub directories goes here.
                     output = process(template, compiler=available_compilers[compiler], staticAttrs=True, extension=extension)
                     outfile = codecs.open(output_filepath, 'w', encoding='utf-8')
