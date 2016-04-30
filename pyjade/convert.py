@@ -66,8 +66,8 @@ def convert_file():
                     template = codecs.getreader('utf-8')(sys.stdin).read()
                 except Exception as e:
                     print(e)
-        if template:
-            output = process(template, compiler=available_compilers[compiler],staticAttrs=True, extension=extension)
+            if template:
+                output = process(template, compiler=available_compilers[compiler],staticAttrs=True, extension=extension)
 
         ### the rest of the output saves the pyjade output or does the converting now if its a folder.
 
@@ -92,9 +92,11 @@ def convert_file():
                     outfile = codecs.open(output_filepath, 'w', encoding='utf-8')
                     outfile.write(output)
 
-        elif os.path.isdir(args[0]): # if path specified is a directory and has no -r option specified, then make sure the user wanted to do this.
+        # len(args) >= 1 added for debuging success conformation
+        elif len(args) >= 1 and os.path.isdir(args[0]): # if path specified is a directory and has no -r option specified, then make sure the user wanted to do this.
             raise Exception("%s is a directory. \n Please use the '-r' flag if you want to convert a directory and all its subdirectories " % (args[0]))
-        elif os.path.isfile(args[0]): # if it gets to here without ending, then a single file or multiple explicit files were specified.
+        # len(args) >= 1 added for debuging success conformation
+        elif len(args) >= 1 and os.path.isfile(args[0]): # if it gets to here without ending, then a single file or multiple explicit files were specified.
             # single file operations
             if file_output:  # will raise Exception "is not file" if its a directory or other - no really! inheritance!
                 outfile = codecs.open(file_output, 'w', encoding='utf-8')
