@@ -32,6 +32,18 @@ print pyjade.simple_convert(jade_text)
 
 ```
 
+NEW! - Directory Conversion [Alpha]
+
+```console
+cd /to/your/directory
+pyjade -r ./
+```
+
+This will convert jade files to Django. other compilers have not been tested or officially implented,
+but might be implicitly implemented in this features current development stage, using the -c flag.
+This will not overwrite the source jade files, but write html files along side it.
+
+
 
 INSTALLATION
 ============
