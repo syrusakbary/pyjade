@@ -33,7 +33,17 @@ except ImportError:  # Django >= 1.9
                 template_name=name,
                 loader=loader,
             )
-    except ImportError:  # Django 1.8.x
+    except ImportError:
+        # Django 1.8.x
+        # In case we are running from the command line, we need to ensure
+        # settings are configured before calling Engine.get_default()
+        from django.conf import settings
+        from django.core.exceptions import ImproperlyConfigured
+        try:
+            settings.TEMPLATES
+        except ImproperlyConfigured:
+            settings.configure()
+
         make_origin = Engine.get_default().make_origin
 
 
