@@ -22,42 +22,44 @@ class Compiler(_Compiler):
             caller_name = '__pyjade_caller_%d' % self.mixing
           else:
             caller_name = 'caller'
-          self.buffer('{%% if %s %%}%s %s() %s{%% endif %%}' % (caller_name, self.variable_start_string,
-              caller_name, self.variable_end_string))
+          self.buffer(
+            self.tag('if ' + caller_name) +
+            self.variable(caller_name + '()') +
+            self.tag('endif')
+          )
         else:
-          self.buffer('{%% block %s %%}'%block.name)
-          if block.mode=='append': self.buffer('%ssuper()%s' % (self.variable_start_string, self.variable_end_string))
+          self.buffer(self.tag('block ' + block.name))
+          if block.mode=='append': self.buffer(self.variable('super()'))
           self.visitBlock(block)
-          if block.mode=='prepend': self.buffer('%ssuper()%s' % (self.variable_start_string, self.variable_end_string))
-          self.buffer('{% endblock %}')
+          if block.mode=='prepend': self.buffer(self.variable('super()'))
+          self.buffer(self.tag('endblock'))
 
     def visitMixin(self,mixin):
         self.mixing += 1
         if not mixin.call:
-          self.buffer('{%% macro %s(%s) %%}'%(mixin.name,mixin.args))
+          self.buffer(self.tag('macro %s(%s)'%(mixin.name,mixin.args)))
           self.visitBlock(mixin.block)
-          self.buffer('{% endmacro %}')
+          self.buffer(self.tag('endmacro'))
         elif mixin.block:
           if self.mixing > 1:
-            self.buffer('{%% set __pyjade_caller_%d=caller %%}' % self.mixing)
-          self.buffer('{%% call %s(%s) %%}'%(mixin.name,mixin.args))
+            self.buffer(self.tag('set __pyjade_caller_%d=caller' % self.mixing))
+          self.buffer(self.tag('call %s(%s)'%(mixin.name,mixin.args)))
           self.visitBlock(mixin.block)
-          self.buffer('{% endcall %}')
+          self.buffer(self.tag('endcall'))
         else:
-          self.buffer('%s%s(%s)%s' % (self.variable_start_string, mixin.name, mixin.args, self.variable_end_string))
+          self.buffer(self.variable('%s(%s)' % (mixin.name, mixin.args)))
         self.mixing -= 1
 
     def visitAssignment(self,assignment):
-        self.buffer('{%% set %s = %s %%}'%(assignment.name,assignment.val))
+        self.buffer(self.tag('set %s = %s'%(assignment.name,assignment.val)))
 
     def visitCode(self,code):
         if code.buffer:
             val = code.val.lstrip()
             val = self.var_processor(val)
-            self.buf.append('%s%s%s%s' % (self.variable_start_string, val,'|escape' if code.escape else '',
-                self.variable_end_string))
+            self.buf.append(self.variable(val + ('|escape' if code.escape else '')))
         else:
-            self.buf.append('{%% %s %%}'%code.val)
+            self.buf.append(self.tag(code.val))
 
         if code.block:
             # if not code.buffer: self.buf.append('{')
@@ -67,15 +69,15 @@ class Compiler(_Compiler):
             if not code.buffer:
               codeTag = code.val.strip().split(' ',1)[0]
               if codeTag in self.autocloseCode:
-                  self.buf.append('{%% end%s %%}'%codeTag)
+                  self.buf.append(self.tag('end' + codeTag))
 
     def visitEach(self,each):
-        self.buf.append("{%% for %s in %s(%s,%d) %%}"%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys)))
+        self.buf.append(self.tag("for %s in %s(%s,%d)"%(','.join(each.keys),ITER_FUNC,each.obj,len(each.keys))))
         self.visit(each.block)
-        self.buf.append('{% endfor %}')
+        self.buf.append(self.tag('endfor'))
 
     def attributes(self,attrs):
-        return "%s%s(%s)%s" % (self.variable_start_string, ATTRS_FUNC,attrs, self.variable_end_string)
+        return self.variable("%s(%s)" % (ATTRS_FUNC, attrs))
 
 
 class PyJadeExtension(Extension):
@@ -108,6 +110,8 @@ class PyJadeExtension(Extension):
         environment.globals[ITER_FUNC] = iteration
         self.variable_start_string = environment.variable_start_string
         self.variable_end_string = environment.variable_end_string
+        self.options["block_start_string"] = environment.block_start_string
+        self.options["block_end_string"] = environment.block_end_string
         self.options["variable_start_string"] = environment.variable_start_string
         self.options["variable_end_string"] = environment.variable_end_string
 
