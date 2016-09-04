@@ -14,6 +14,7 @@ try:
 except ImportError: # Django < 1.8
     from django.template import FilterExpression
 from django.template.loader import get_template
+from django.utils.html import escape
 import six
 
 from pyjade.runtime import iteration
@@ -37,12 +38,13 @@ class Evaluator(template.Node):
   def render(self, context):
     '''Evaluates the code in the page and returns the result'''
     modules = {
-      'pyjade': __import__('pyjade')
+      'pyjade': __import__('pyjade'),
+      'escape': escape,
     }
     context['false'] = False
     context['true'] = True
     try:
-        return six.text_type(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
+        return six.text_type(eval('pyjade.runtime.attrs(%s, escape=escape)'%self.code,modules,context))
     except NameError:
         return ''
 
