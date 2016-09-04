@@ -277,6 +277,8 @@ class Parser(object):
     def parseTag(self):
         i = 2
         if 'attrs'==self.lookahead(i).type: i += 1
+        if 'andattrs' == self.lookahead(i).type:
+            i += 1
 
         if ':'==self.lookahead(i).type:
             if 'indent' == self.lookahead(i+1).type:
@@ -300,6 +302,10 @@ class Parser(object):
                 tok = self.advance()
                 for n,v in six.iteritems(tok.attrs):
                     tag.setAttribute(n,v,n in tok.static_attrs)
+                continue
+            elif 'andattrs' == t:
+                tok = self.advance()
+                tag.setAndAttributes(tok.val)
                 continue
             else:
                 break

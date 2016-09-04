@@ -111,6 +111,7 @@ class Tag(Node):
 		self.code = None
 		self.text = None
 		self._attrs = []
+		self.andAttrs = None
 		self.inline = inline
 		self.block = block or Block()
 		self.buffer = buffer
@@ -135,6 +136,9 @@ class Tag(Node):
 	def getAttribute(self,name):
 		for attr in self._attrs:
 			if attr and attr['name'] == name: return attr['val']
+
+	def setAndAttributes(self, val):
+		self.andAttrs = val
 
 	@property
 	def attrs(self):

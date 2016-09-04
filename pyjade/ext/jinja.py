@@ -1,5 +1,6 @@
 from jinja2.ext import Extension
 import os
+import six
 import pyjade.runtime
 
 from pyjade import Compiler as _Compiler
@@ -10,6 +11,7 @@ from pyjade.utils import process
 
 ATTRS_FUNC = '__pyjade_attrs'
 ITER_FUNC = '__pyjade_iter'
+ITEMS_FUNC = '__pyjade_items'
 
 def attrs(attrs, terse=False):
     return Markup(_attrs(attrs, terse, Undefined))
@@ -106,6 +108,7 @@ class PyJadeExtension(Extension):
         # get_corresponding_lineno
         environment.globals[ATTRS_FUNC] = attrs
         environment.globals[ITER_FUNC] = iteration
+        environment.filters[ITEMS_FUNC] = six.iteritems
         self.variable_start_string = environment.variable_start_string
         self.variable_end_string = environment.variable_end_string
         self.options["variable_start_string"] = environment.variable_start_string

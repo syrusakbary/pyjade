@@ -189,6 +189,8 @@ class Compiler(object):
         else:
             self.buffer('<%s' % name)
         self.visitAttributes(tag.attrs)
+        if tag.andAttrs:
+            self.visitAndAttributes(tag.andAttrs)
         self.buffer('/>' if not self.terse and closed else '>')
 
         if not closed:
@@ -382,6 +384,9 @@ class Compiler(object):
                 temp_attrs.append(attr)
 
         if temp_attrs: self.visitDynamicAttributes(temp_attrs)
+
+    def visitAndAttributes(self, andattrs):
+        self.buffer('{%% for k, v in %s|__pyjade_items %%} {{ k }}="{{ v }}"{%% endfor %%}' % andattrs)
 
     @classmethod
     def register_filter(cls, name, f):
