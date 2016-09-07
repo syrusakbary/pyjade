@@ -115,19 +115,6 @@ TEMPLATES = [
 ]
 ```
 
-**Or, in Django 1.7 or earlier:**
-
-In `settings.py`, modify `TEMPLATE_LOADERS` like:
-
-```python
-TEMPLATE_LOADERS = (
-    ('pyjade.ext.django.Loader',(
-        'django.template.loaders.filesystem.Loader',
-        'django.template.loaders.app_directories.Loader',
-    )),
-)
-```
-
 Jinja2
 ------
 
