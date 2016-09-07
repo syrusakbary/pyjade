@@ -20,7 +20,7 @@ def process_param(key, value, terse=False):
 TYPE_CODE = {
     'if': operator.truth,
     'unless': operator.not_,
-    'elsif': operator.truth,
+    'elif': operator.truth,
     'else': lambda v: True}
 
 
