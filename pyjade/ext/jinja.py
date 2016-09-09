@@ -16,6 +16,31 @@ def attrs(attrs, terse=False):
 
 class Compiler(_Compiler):
 
+    def visitInclude(self, node):
+        sep = os.path.sep
+        baseDir = os.getcwd()+sep
+        path = node.path
+        done = False
+        if os.path.exists(baseDir+path):
+            src = open(baseDir+path, 'r').read()
+            done = True
+        elif os.path.exists((baseDir+"%s.jade") % path):
+            src = open((baseDir+"%s.jade") % path, 'r').read()
+            done = True
+
+        if not done:
+          baseDir += 'templates'+sep
+          if os.path.exists(baseDir+path):
+              src = open(baseDir+path, 'r').read()
+          elif os.path.exists((baseDir+"%s.jade") % path):
+              src = open((baseDir+"%s.jade") % path, 'r').read()
+          else:
+              raise Exception("Include path: " + str(path) + " doesn't exist")
+
+        parser = pyjade.parser.Parser(src)
+        block = parser.parse()
+        self.visit(block)
+
     def visitCodeBlock(self,block):
         if self.mixing > 0:
           if self.mixing > 1:
