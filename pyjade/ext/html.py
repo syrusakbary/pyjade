@@ -141,6 +141,7 @@ class Compiler(pyjade.compiler.Compiler):
         classes = []
         params = []
         for attr in attrs:
+            attr = self.convertInlineConditionalToPython(attr)
             if attr['name'] == 'class':
                 value = self._get_value(attr)
                 if isinstance(value, list):

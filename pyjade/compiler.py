@@ -4,6 +4,7 @@ import six
 
 class Compiler(object):
     RE_INTERPOLATE = re.compile(r'(\\)?([#!]){(.*?)}')
+    RE_INLINE_CONDITIONAL = re.compile(r"^([\(\w][^\?]*)\s*\?\s*(.*)\s*:\s*(.*)\s*$")
     doctypes = {
         '5': '<!DOCTYPE html>'
       , 'xml': '<?xml version="1.0" encoding="utf-8" ?>'
@@ -339,10 +340,22 @@ class Compiler(object):
     def attributes(self,attrs):
         return "%s__pyjade_attrs(%s)%s" % (self.variable_start_string, attrs, self.variable_end_string)
 
+    def convertInlineConditionalToPython(self, attr):
+        match = self.RE_INLINE_CONDITIONAL.match(attr['val'])
+        if match:
+            condition = match.group(1).strip()
+            condition = condition.replace('&&', ' and ').replace('||', ' or ')
+            is_true = match.group(2).strip()
+            is_false = match.group(3).strip()
+            attr['val'] = '%s if %s else %s' % (is_true, condition, is_false)
+
+        return attr
+
     def visitDynamicAttributes(self, attrs):
         buf, classes, params = [], [], {}
         terse='terse=True' if self.terse else ''
         for attr in attrs:
+            attr = self.convertInlineConditionalToPython(attr)
             if attr['name'] == 'class':
                 classes.append('(%s)' % attr['val'])
             else:
