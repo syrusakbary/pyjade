@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from .utils import odict
 import types
 import six
+from six.moves import reduce
 from itertools import chain
 
 try:
@@ -9,21 +10,6 @@ try:
 except ImportError:
     import UserDict
     MappingType = (UserDict.UserDict, UserDict.DictMixin, dict)
-
-def flatten(l, ltypes=(list, tuple)):
-    ltype = type(l)
-    l = list(l)
-    i = 0
-    while i < len(l):
-        while isinstance(l[i], ltypes):
-            if not l[i]:
-                l.pop(i)
-                i -= 1
-                break
-            else:
-                l[i:i + 1] = l[i]
-        i += 1
-    return ltype(l)
 
 def escape(s):
     """Convert the characters &, <, >, ' and " in string s to HTML-safe
@@ -48,6 +34,16 @@ def escape(s):
     )
 
 def attrs (attrs=[],terse=False, undefined=None):
+
+    def extract_classes(cls):
+        """Recursively extract_class from iterable and mappings"""
+        if isinstance(cls, (list, tuple)):
+            return tuple(reduce(lambda t1, t2: t1 + t2, map(extract_classes, cls)))
+        if isinstance(cls, dict):
+            return tuple(sorted(dict(filter(
+                lambda x: x[1] and x[1] != undefined, cls.items()))))
+        return (str(cls),)
+
     buf = []
     if bool(attrs):
         buf.append(u'')
@@ -55,8 +51,8 @@ def attrs (attrs=[],terse=False, undefined=None):
             if undefined is not None and isinstance(v, undefined):
                 continue
             if v!=None and (v!=False or type(v)!=bool):
-                if k=='class' and isinstance(v, (list, tuple)):
-                    v = u' '.join(map(str,flatten(v)))
+                if k=='class':
+                    v = u' '.join(extract_classes(v))
                 t = v==True and type(v)==bool
                 if t and not terse: v=k
                 buf.append(u'%s'%k if terse and t else u'%s="%s"'%(k,escape(v)))

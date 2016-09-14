@@ -517,7 +517,14 @@ class Lexer(object):
                         if not ns.val:
                             tok.attrs[ns.key] = True
                         else:
-                            tok.attrs[ns.key], is_interpolated = interpolate(ns.val)
+                            val, is_interpolated = interpolate(ns.val)
+                            if ns.key == 'class' and 'class' in tok.attrs:
+                                tok.attrs['class'] = '[%s, %s]' % (
+                                    tok.attrs['class'],
+                                    val
+                                )
+                            else:
+                                tok.attrs[ns.key] = val
                             ns.literal = ns.literal and not is_interpolated
                         if ns.literal:
                             tok.static_attrs.add(ns.key)
@@ -578,7 +585,6 @@ class Lexer(object):
                         ns.key += c
                     else:
                         ns.val += c
-
             for char in string:
                 parse(char)
 
