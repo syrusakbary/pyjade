@@ -232,19 +232,16 @@ class Compiler(object):
 
     def interpolate(self, text, escape=None):
         def repl(matchobj):
-            if escape is None:
-                if matchobj.group(2) == '!':
-                    filter_string = ''
-                else:
-                    filter_string = '|escape'
-            elif escape is True:
-                filter_string = '|escape'
-            elif escape is False:
-                filter_string = ''
+            filter_ = (escape is None and matchobj.group(2) != '!') or escape
+            return '%s%s%s%s%s' % (
+                self.variable_start_string,
+                '(' if filter_ else '',
+                matchobj.group(3),
+                ')|escape' if filter_ else '',
+                self.variable_end_string)
 
-            return self.variable_start_string + matchobj.group(3) + \
-                filter_string + self.variable_end_string
         return self.RE_INTERPOLATE.sub(repl, text)
+
 
     def visitText(self,text):
         text = ''.join(text.nodes)
@@ -307,11 +304,14 @@ class Compiler(object):
         if conditional.type in ['if','unless']:
             self.buf.append('{% endif %}')
 
-
     def visitVar(self, var, escape=False):
         var = self.var_processor(var)
-        return ('%s%s%s%s' % (self.variable_start_string, var,
-                              '|escape' if escape else '', self.variable_end_string))
+        return ('%s%s%s%s%s' % (
+            self.variable_start_string,
+            '(' if escape else '',
+            var,
+            ')|escape' if escape else '',
+            self.variable_end_string))
 
     def visitCode(self,code):
         if code.buffer:

@@ -54,7 +54,11 @@ class Compiler(_Compiler):
         if code.buffer:
             val = code.val.lstrip()
             val = self.var_processor(val)
-            self.buf.append('%s%s%s%s' % (self.variable_start_string, val,'|escape' if code.escape else '',
+            self.buf.append('%s%s%s%s%s' % (
+                self.variable_start_string,
+                '(' if code.escape else '',
+                val,
+                ')|escape' if code.escape else '',
                 self.variable_end_string))
         else:
             self.buf.append('{%% %s %%}'%code.val)
