@@ -87,7 +87,7 @@ class Compiler(pyjade.compiler.Compiler):
         self.visit(block)
 
     def visitExtends(self, node):
-        raise pyjade.exceptions.CurrentlyNotSupported()
+        raise NotImplementedError()
 
     def visitMixin(self, mixin):
         if mixin.block:

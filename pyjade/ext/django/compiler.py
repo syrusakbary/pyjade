@@ -3,7 +3,6 @@ import os
 
 from pyjade import Compiler as _Compiler, Parser, register_filter
 from pyjade.runtime import attrs
-from pyjade.exceptions import CurrentlyNotSupported
 from pyjade.utils import process
 
 from django.conf import settings
@@ -34,7 +33,7 @@ class Compiler(_Compiler):
           self.visitBlock(mixin.block)
           self.buffer('{% end__pyjade_kwacro %}')
         elif mixin.block:
-          raise CurrentlyNotSupported("The mixin blocks are not supported yet.")
+          raise NotImplementedError("The mixin blocks are not supported yet.")
         else:
           self.buffer('{%% __pyjade_usekwacro %s %s %%}'%(mixin.name,mixin.args))
         self.mixing -= 1
