@@ -70,14 +70,15 @@ class Lexer(object):
     RE_BLOCK = re.compile(r'''^block(( +(?:(prepend|append) +)?([^\n]*))|\n)''')
     RE_YIELD = re.compile(r'^yield *')
     RE_INCLUDE = re.compile(r'^include +([^\n]+)')
-    RE_ASSIGNMENT = re.compile(r'^(-\s+var\s+)?(\w+) += *([^;\n]+)( *;? *)')
+    RE_ASSIGNMENT = re.compile(r'^(-[^\n\w]+var[^\n\w]+)?(\w+) += *([^;\n]+)( *;? *)')
     RE_MIXIN = re.compile(r'^mixin +([-\w]+)(?: *\((.*)\))?')
     RE_CALL = re.compile(r'^\+\s*([-.\w]+)(?: *\((.*)\))?')
     RE_CONDITIONAL = re.compile(r'^(?:- *)?(if|unless|else if|elif|else)\b([^\n]*)')
     RE_BLANK = re.compile(r'^\n *\n')
     # RE_WHILE = re.compile(r'^while +([^\n]+)')
     RE_EACH = re.compile(r'^(?:- *)?(?:each|for) +([\w, ]+) +in +([^\n]+)')
-    RE_CODE = re.compile(r'^(!?=|-)([^\n]+)')
+    RE_BUFFERED_CODE = re.compile(r'^(!?=)([^\n]*)')
+    RE_UNBUFFERED_CODE = re.compile(r'^- *([^\n]*)')
     RE_ATTR_INTERPOLATE = re.compile(r'#\{([^}]+)\}')
     RE_ATTR_PARSE = re.compile(r'''^['"]|['"]$''')
     RE_INDENT_TABS = re.compile(r'^\n(\t*) *')
@@ -442,15 +443,26 @@ class Lexer(object):
             tok.code = captures[2]
             return tok
 
-    def code(self):
-        captures = regexec(self.RE_CODE, self.input)
+    def buffered_code(self):
+        captures = regexec(self.RE_BUFFERED_CODE, self.input)
         if captures:
             self.consume(len(captures[0]))
             flags, name = captures[1:]
             tok = self.tok('code', name)
             tok.escape = flags.startswith('=')
             #print captures
-            tok.buffer = '=' in flags
+            tok.buffer = True
+            # print tok.buffer
+            return tok
+
+    def unbuffered_code(self):
+        captures = regexec(self.RE_UNBUFFERED_CODE, self.input)
+        if captures:
+            self.consume(len(captures[0]))
+            tok = self.tok('code', captures[1])
+            #print captures
+            tok.escape = False
+            tok.buffer = False
             # print tok.buffer
             return tok
 
@@ -666,7 +678,8 @@ class Lexer(object):
             or self.tag() \
             or self.textBlockStart() \
             or self.filter() \
-            or self.code() \
+            or self.unbuffered_code() \
+            or self.buffered_code() \
             or self.id() \
             or self.className() \
             or self.attrs() \
@@ -689,7 +702,8 @@ class InlineLexer(Lexer):
             or self.call() \
             or self.assignment() \
             or self.tag() \
-            or self.code() \
+            or self.unbuffered_code() \
+            or self.buffered_code() \
             or self.id() \
             or self.className() \
             or self.attrs() \
