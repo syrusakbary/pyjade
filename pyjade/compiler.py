@@ -278,11 +278,17 @@ class Compiler(object):
 
     def visitExtends(self,node):
         path = self.format_path(node.path)
-        self.buffer('{%% extends "%s" %%}' % (path))
+        self.buffer(
+            '{%% extends "%s" %%}'%(path) +
+            '{%% __pyjade_loadkwacros "%s" %%}'%(path)
+        )
 
     def visitInclude(self,node):
         path = self.format_path(node.path)
-        self.buffer('{%% include "%s" %%}' % (path))
+        self.buffer(
+            '{%% include "%s" %%}'%(path) +
+            '{%% __pyjade_loadkwacros "%s" %%}'%(path)
+        )
 
     def visitBlockComment(self, comment):
         if not comment.buffer:

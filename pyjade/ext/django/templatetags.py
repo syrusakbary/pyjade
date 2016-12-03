@@ -1,3 +1,7 @@
+# -*- coding: UTF-8 -*-
+
+from __future__ import unicode_literals
+
 """
 A smarter {% if %} tag for django templates.
 
@@ -33,7 +37,7 @@ class Evaluator(template.Node):
   '''Calls an arbitrary method of an object'''
   def __init__(self, code):
     self.code = code
-    
+
   def render(self, context):
     '''Evaluates the code in the page and returns the result'''
     modules = {
@@ -42,9 +46,10 @@ class Evaluator(template.Node):
     context['false'] = False
     context['true'] = True
     try:
-        return six.text_type(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
-    except NameError:
-        return ''
+        result = unicode(eval('pyjade.runtime.attrs(%s)'%self.code,modules,context))
+    except Exception as e:
+        raise Exception('Eval error. Code was: %s' % self.code)
+    return result
 
 @register.tag(name="__pyjade_set")
 def do_set(parser, token):
@@ -59,7 +64,7 @@ class Setter(template.Node):
   '''Calls an arbitrary method of an object'''
   def __init__(self, code):
     self.code = code
-    
+
   def render(self, context):
     '''Evaluates the code in the page and returns the result'''
     modules = {
@@ -86,11 +91,11 @@ def _setup_macros_dict(parser):
         parser._macros
     except AttributeError:
         parser._macros = {}
- 
- 
+
+
 class DefineMacroNode(template.Node):
     def __init__(self, name, nodelist, args):
- 
+
         self.name = name
         self.nodelist = nodelist
         self.args = []
@@ -102,12 +107,12 @@ class DefineMacroNode(template.Node):
             else:
                 name, value = a.split("=")
                 self.kwargs[name] = value
- 
+
     def render(self, context):
         ## empty string - {% macro %} tag does no output
         return ''
- 
- 
+
+
 @register.tag(name="__pyjade_kwacro")
 def do_macro(parser, token):
     try:
@@ -121,58 +126,97 @@ def do_macro(parser, token):
     # for now, "blow your head clean off"
     nodelist = parser.parse(('end__pyjade_kwacro', ))
     parser.delete_first_token()
- 
+
     ## Metadata of each macro are stored in a new attribute
     ## of 'parser' class. That way we can access it later
     ## in the template when processing 'usemacro' tags.
     _setup_macros_dict(parser)
     parser._macros[macro_name] = DefineMacroNode(macro_name, nodelist, args)
     return parser._macros[macro_name]
- 
- 
+
+
 class LoadMacrosNode(template.Node):
+
+    def __init__(self, file_name_expr, parser):
+        self.file_name_expr = file_name_expr
+        self.loaded = False
+
     def render(self, context):
-        ## empty string - {% loadmacros %} tag does no output
+        if not self.loaded:
+            if not "_macros" in context:
+                context["_macros"] = {}  # _setup_macros_dict_for_context(context)
+            context["_macros"].update(self.load_macros(context))
+
+        # empty string - {% loadmacros %} tag does no output
         return ''
- 
- 
+
+    def load_macros(self, context, ignore_failures=False):
+        try:
+            file_name = self.file_name_expr.resolve(
+                context,
+                ignore_failures=True,
+            )
+        except template.VariableDoesNotExist:
+            file_name = None
+
+        if file_name is None:
+            if ignore_failures:
+                return None
+
+            raise template.TemplateSyntaxError(
+                "Unable to resolve file name: " + str(self.file_name_expr))
+
+        t = get_template(file_name)
+        macros = t.nodelist.get_nodes_by_type(DefineMacroNode)
+
+        load_nodes = t.nodelist.get_nodes_by_type(LoadMacrosNode)
+        others = [x.load_macros(context, ignore_failures) for x in load_nodes]
+
+        own = {x.name: x for x in macros}
+
+        result = {}
+        for item in others:
+            result.update(item)
+
+        result.update(own)
+
+        return result
+
+
 @register.tag(name="__pyjade_loadkwacros")
 def do_loadmacros(parser, token):
     try:
         tag_name, filename = token.split_contents()
     except IndexError:
         m = ("'%s' tag requires at least one argument (macro name)"
-            % token.contents.split()[0])
-        raise template.TemplateSyntaxError(m)
-    if filename[0] in ('"', "'") and filename[-1] == filename[0]:
-        filename = filename[1:-1]
-    t = get_template(filename)
-    macros = t.nodelist.get_nodes_by_type(DefineMacroNode)
-    ## Metadata of each macro are stored in a new attribute
-    ## of 'parser' class. That way we can access it later
-    ## in the template when processing 'usemacro' tags.
-    _setup_macros_dict(parser)
-    for macro in macros:
-        parser._macros[macro.name] = macro
-    return LoadMacrosNode()
- 
- 
+             % token.contents.split()[0])
+        raise template.TemplateSyntaxError, m
+    node = LoadMacrosNode(parser.compile_filter(filename), parser)
+    preloaded_macros = node.load_macros({}, ignore_failures=True)
+    if preloaded_macros:
+        parser._macros = getattr(parser, "_macros", {})
+        parser._macros.update(preloaded_macros)
+        node.loaded = True
+
+    return node
+
+
 class UseMacroNode(template.Node):
- 
+
     def __init__(self, macro, fe_args, fe_kwargs):
         self.macro = macro
         self.fe_args = fe_args
         self.fe_kwargs = fe_kwargs
- 
+
     def render(self, context):
- 
+
         for i, arg in enumerate(self.macro.args):
             try:
                 fe = self.fe_args[i]
                 context[arg] = fe.resolve(context)
             except IndexError:
                 context[arg] = ""
- 
+
         for name, default in six.iteritems(self.macro.kwargs):
             if name in self.fe_kwargs:
                 context[name] = self.fe_kwargs[name].resolve(context)
@@ -180,10 +224,10 @@ class UseMacroNode(template.Node):
                 context[name] = FilterExpression(default,
                                                  self.macro.parser
                 ).resolve(context)
- 
+
         return self.macro.nodelist.render(context)
- 
- 
+
+
 @register.tag(name="__pyjade_usekwacro")
 def do_usemacro(parser, token):
     try:
@@ -198,10 +242,10 @@ def do_usemacro(parser, token):
     except (AttributeError, KeyError):
         m = "Macro '%s' is not defined" % macro_name
         raise template.TemplateSyntaxError(m)
- 
+
     fe_kwargs = {}
     fe_args = []
- 
+
     for val in values:
         val = val.rstrip(',')
         if "=" in val:
@@ -211,7 +255,7 @@ def do_usemacro(parser, token):
         else:  # arg
             # no validation, go for it ...
             fe_args.append(FilterExpression(val, parser))
- 
+
     macro.parser = parser
     return UseMacroNode(macro, fe_args, fe_kwargs)
 
