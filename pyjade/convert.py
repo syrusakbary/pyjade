@@ -53,7 +53,7 @@ def convert_file():
         elif six.PY3:
             template = sys.stdin.read()
         else:
-            template = codecs.getreader('utf-8')(sys.stdin).read()
+            template = codecs.getreader('utf-8')(getattr(sys.stdin, 'buffer', sys.stdin)).read()
         output = process(template, compiler=available_compilers[compiler],
                          staticAttrs=True, extension=extension)
         if file_output:
@@ -62,7 +62,7 @@ def convert_file():
         elif six.PY3:
             sys.stdout.write(output)
         else:
-            codecs.getwriter('utf-8')(sys.stdout).write(output)
+            codecs.getwriter('utf-8')(getattr(sys.stdout, 'buffer', sys.stdout)).write(output)
     else:
         raise Exception('You must have %s installed!' % compiler)
 
