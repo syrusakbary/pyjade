@@ -40,6 +40,14 @@ class Code(Node):
 		self.block=None
 		self.buffer = buffer
 		self.escape = escape
+
+class BlockCode(Code):
+	def __init__(self,val,block,buffer,escape):
+		self.val = val
+		self.block = block
+		self.buffer = buffer
+		self.escape = escape
+
 class Comment(Node):
 	def __init__(self,val,buffer):
 		self.val = val

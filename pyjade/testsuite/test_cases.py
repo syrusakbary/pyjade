@@ -171,13 +171,13 @@ def run_case(case,process):
         pass
 
 exclusions = {
-    'Html': set(['mixins', 'mixin.blocks', 'layout', 'unicode']),
-    'Mako': set(['layout']),
+    'Html': set(['mixins', 'mixin.blocks', 'layout', 'unicode', 'code-block']),
+    'Mako': set(['layout', 'code-block']),
     'Tornado': set(['layout']),
     'Jinja2': set(['layout']),
     'Jinja2-variable_start_string': set(['layout']),
-    'Django': set(['layout'])}
-    
+    'Django': set(['layout', 'code-block'])}
+
 
 @with_setup(setup_func, teardown_func)
 def test_case_generator():
