@@ -58,7 +58,7 @@ Django
 
 **For Django 1.9**
 
-In `settings.py`, add a `loader` to `TEMPLATES` like so:
+In `settings.py`, add a `loader` and the required `builtins` to `TEMPLATES` like so:
 
 ```python
 TEMPLATES = [
@@ -73,14 +73,15 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.core.context_processors.request'
             ],
+            # >>> PyJade settings start here
             'loaders': [
-                # PyJade part:   ##############################
                 ('pyjade.ext.django.Loader', (
                     'django.template.loaders.filesystem.Loader',
                     'django.template.loaders.app_directories.Loader',
                 ))
             ],
             'builtins': ['pyjade.ext.django.templatetags'],
+            # <<< PyJade settings end here
         },
     },
 ]
@@ -103,13 +104,14 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.core.context_processors.request'
             ],
+            # >>> PyJade settings start here
             'loaders': [
-                # PyJade part:   ##############################
                 ('pyjade.ext.django.Loader', (
                     'django.template.loaders.filesystem.Loader',
                     'django.template.loaders.app_directories.Loader',
                 ))
             ],
+            # <<< PyJade settings end here
         },
     },
 ]
