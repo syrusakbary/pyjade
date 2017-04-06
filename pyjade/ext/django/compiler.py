@@ -94,7 +94,7 @@ except AttributeError:
     # Django 1.11 moved templatize to separate module
     from django.utils.translation import template
 
-    template.templatize = decorate_templatize(trans_real.templatize)
+    template.templatize = decorate_templatize(template.templatize)
 
 try:
     from django.contrib.markup.templatetags.markup import markdown
