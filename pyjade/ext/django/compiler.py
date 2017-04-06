@@ -88,8 +88,13 @@ def decorate_templatize(func):
         return func(html, origin)
 
     return templatize
+try:
+    trans_real.templatize = decorate_templatize(trans_real.templatize)
+except AttributeError:
+    # Django 1.11 moved templatize to separate module
+    from django.utils.translation import template
 
-trans_real.templatize = decorate_templatize(trans_real.templatize)
+    template.templatize = decorate_templatize(template.templatize)
 
 try:
     from django.contrib.markup.templatetags.markup import markdown
