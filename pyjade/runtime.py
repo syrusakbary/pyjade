@@ -5,7 +5,7 @@ import six
 from itertools import chain
 
 try:
-    from collections import Mapping as MappingType
+    from collections.abc import Mapping as MappingType
 except ImportError:
     import UserDict
     MappingType = (UserDict.UserDict, UserDict.DictMixin, dict)
