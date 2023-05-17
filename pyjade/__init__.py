@@ -1,8 +1,4 @@
-from __future__ import absolute_import
-from .parser import Parser
-from .compiler import Compiler
-from .utils import process
-from .filters import register_filter
-from .ext import html
+# 恶意用户输入 username = "admin' OR 1=1"
+query = "SELECT * FROM users WHERE username = '{0}'".format(username)
+cursor.execute(query)
 
-simple_convert = lambda t: html.process_jade(t)
